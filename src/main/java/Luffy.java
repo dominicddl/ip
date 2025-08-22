@@ -91,6 +91,24 @@ public class Luffy {
         }
     }
 
+    private void validateDeleteCommand(String input) throws LuffyException {
+        String[] parts = input.split(" ");
+        if (parts.length < 2) {
+            throw new LuffyException("Which task do you want me to delete? Give me a number!");
+        }
+
+        try {
+            int taskNumber = Integer.parseInt(parts[1]);
+            if (taskNumber < 1 || taskNumber > tasks.size()) {
+                throw new LuffyException("Task " + taskNumber + "? That doesn't exist! I only have "
+                        + tasks.size() + " tasks!");
+            }
+        } catch (NumberFormatException e) {
+            throw new LuffyException(
+                    "'" + parts[1] + "' is not a number! Give me a proper task number!");
+        }
+    }
+
     public static void main(String[] args) {
         Luffy luffy = new Luffy();
         System.out.println(luffy.greet);
@@ -137,7 +155,6 @@ public class Luffy {
                             addedTask + "\n" + deadline.toString() + "\n" + luffy.numberOfTasks());
                 }
                 // If input is "event <description> /from <date> /to <date>", create a new Event
-                // task
                 else if (input.startsWith("event") || input.startsWith("Event")
                         || input.startsWith("EVENT")) {
                     luffy.validateEventCommand(input);
@@ -166,9 +183,19 @@ public class Luffy {
                     System.out.println(
                             "NANI?" + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon() + " "
                                     + luffy.tasks.get(taskNumber - 1).getDescription());
+                }
+                // Deleting a task
+                else if (input.startsWith("delete") || input.startsWith("Delete")
+                        || input.startsWith("DELETE")) {
+                    luffy.validateDeleteCommand(input);
+                    int taskNumber = Integer.parseInt(input.split(" ")[1]);
+                    Task deletedTask = luffy.tasks.get(taskNumber - 1);
+                    luffy.tasks.remove(taskNumber - 1);
+                    System.out.println("HAI! TASK DELETED:\n" + deletedTask.toString() + "\n"
+                            + luffy.numberOfTasks());
                 } else if (!input.isEmpty()) {
                     throw new LuffyException("I don't understand '" + input
-                            + "'! Try: todo, deadline, event, mark, unmark, list, or bye!");
+                            + "'! Try: todo, deadline, event, mark, unmark, delete, list, or bye!");
                 }
 
             } catch (LuffyException e) {
