@@ -11,6 +11,86 @@ public class Luffy {
         return "Now you have " + tasks.size() + " tasks in the list.";
     }
 
+    private void validateTodoCommand(String input) throws LuffyException {
+        if (input.trim().length() <= 4 || input.substring(4).trim().isEmpty()) {
+            throw new LuffyException(
+                    "Hey! A todo task needs a description, you know! I can't remember nothing!");
+        }
+    }
+
+    private void validateDeadlineCommand(String input) throws LuffyException {
+        if (input.trim().length() <= 8 || input.substring(8).trim().isEmpty()) {
+            throw new LuffyException(
+                    "Oi! You gotta tell me what the deadline is for! I'm not a mind reader!");
+        }
+
+        int byIndex = input.indexOf("/by");
+        if (byIndex == -1) {
+            throw new LuffyException(
+                    "Where's the '/by' part? I need to know when this deadline is, dattebayo!");
+        }
+
+        if (byIndex + 3 >= input.length() || input.substring(byIndex + 3).trim().isEmpty()) {
+            throw new LuffyException(
+                    "You forgot to tell me WHEN the deadline is! Put something after '/by'!");
+        }
+    }
+
+    private void validateEventCommand(String input) throws LuffyException {
+        if (input.trim().length() <= 5 || input.substring(5).trim().isEmpty()) {
+            throw new LuffyException(
+                    "What event are we talking about? Give me a description, nakama!");
+        }
+
+        int fromIndex = input.indexOf("/from");
+        int toIndex = input.indexOf("/to");
+
+        if (fromIndex == -1) {
+            throw new LuffyException(
+                    "Missing '/from'! When does this event start? I need to know!");
+        }
+
+        if (toIndex == -1) {
+            throw new LuffyException(
+                    "Missing '/to'! When does this event end? Don't leave me hanging!");
+        }
+
+        if (fromIndex >= toIndex) {
+            throw new LuffyException(
+                    "Hey! '/from' should come before '/to'! That's just common sense!");
+        }
+
+        if (fromIndex + 5 >= input.length()
+                || input.substring(fromIndex + 5, toIndex).trim().isEmpty()) {
+            throw new LuffyException(
+                    "You didn't tell me when it starts! Put something after '/from'!");
+        }
+
+        if (toIndex + 3 >= input.length() || input.substring(toIndex + 3).trim().isEmpty()) {
+            throw new LuffyException("You didn't tell me when it ends! Put something after '/to'!");
+        }
+    }
+
+    private void validateMarkUnmarkCommand(String input, boolean isMark) throws LuffyException {
+        String[] parts = input.split(" ");
+        if (parts.length < 2) {
+            String action = isMark ? "mark" : "unmark";
+            throw new LuffyException(
+                    "Which task do you want me to " + action + "? Give me a number!");
+        }
+
+        try {
+            int taskNumber = Integer.parseInt(parts[1]);
+            if (taskNumber < 1 || taskNumber > tasks.size()) {
+                throw new LuffyException("Task " + taskNumber + "? That doesn't exist! I only have "
+                        + tasks.size() + " tasks!");
+            }
+        } catch (NumberFormatException e) {
+            throw new LuffyException(
+                    "'" + parts[1] + "' is not a number! Give me a proper task number!");
+        }
+    }
+
     public static void main(String[] args) {
         Luffy luffy = new Luffy();
         System.out.println(luffy.greet);
@@ -19,35 +99,36 @@ public class Luffy {
 
         // While scanner is open, keep asking for input
         while (sc.hasNextLine()) {
-            String input = sc.nextLine();
+            String input = sc.nextLine().trim();
 
-            // If input is "bye", print goodbye message and break loop
-            if (input.equals("bye") || input.equals("Bye") || input.equals("BYE")) {
-                System.out.println(luffy.goodbye);
-                break;
-            }
-
-            if (input.equals("list") || input.equals("List") || input.equals("LIST")) {
-                System.out.println("Here are the tasks in your list:");
-                for (int i = 0; i < luffy.tasks.size(); i++) {
-                    System.out.println(i + 1 + ". " + luffy.tasks.get(i).toString());
+            try {
+                // If input is "bye", print goodbye message and break loop
+                if (input.equals("bye") || input.equals("Bye") || input.equals("BYE")) {
+                    System.out.println(luffy.goodbye);
+                    break;
                 }
-            }
 
-            // If input starts with "todo", create a new Todo task
-            if (input.startsWith("todo") || input.startsWith("Todo") || input.startsWith("TODO")) {
-                String description = input.substring(5);
-                Todo todo = new Todo(description);
-                luffy.tasks.add(todo);
-                System.out
-                        .println(addedTask + "\n" + todo.toString() + "\n" + luffy.numberOfTasks());
-            }
-
-            // If input is "deadline <description> /by <date>", create a new Deadline task
-            if (input.startsWith("deadline") || input.startsWith("Deadline")
-                    || input.startsWith("DEADLINE")) {
-                int byIndex = input.indexOf("/by");
-                if (byIndex != -1) {
+                if (input.equals("list") || input.equals("List") || input.equals("LIST")) {
+                    System.out.println("Here are the tasks in your list:");
+                    for (int i = 0; i < luffy.tasks.size(); i++) {
+                        System.out.println(i + 1 + ". " + luffy.tasks.get(i).toString());
+                    }
+                }
+                // If input starts with "todo", create a new Todo task
+                else if (input.startsWith("todo") || input.startsWith("Todo")
+                        || input.startsWith("TODO")) {
+                    luffy.validateTodoCommand(input);
+                    String description = input.substring(4).trim();
+                    Todo todo = new Todo(description);
+                    luffy.tasks.add(todo);
+                    System.out.println(
+                            addedTask + "\n" + todo.toString() + "\n" + luffy.numberOfTasks());
+                }
+                // If input is "deadline <description> /by <date>", create a new Deadline task
+                else if (input.startsWith("deadline") || input.startsWith("Deadline")
+                        || input.startsWith("DEADLINE")) {
+                    luffy.validateDeadlineCommand(input);
+                    int byIndex = input.indexOf("/by");
                     String description = input.substring(8, byIndex).trim();
                     String by = input.substring(byIndex + 3).trim();
                     Deadline deadline = new Deadline(description, by);
@@ -55,36 +136,45 @@ public class Luffy {
                     System.out.println(
                             addedTask + "\n" + deadline.toString() + "\n" + luffy.numberOfTasks());
                 }
-            }
-
-            // If input is "event <description> /from <date> /to <date>", create a new Event task
-            if (input.startsWith("event") || input.startsWith("Event")
-                    || input.startsWith("EVENT")) {
-                int fromIndex = input.indexOf("/from");
-                int toIndex = input.indexOf("/to");
-                if (fromIndex != -1 && toIndex != -1 && fromIndex < toIndex) {
-                    String description = input.substring(6, fromIndex).trim();
+                // If input is "event <description> /from <date> /to <date>", create a new Event
+                // task
+                else if (input.startsWith("event") || input.startsWith("Event")
+                        || input.startsWith("EVENT")) {
+                    luffy.validateEventCommand(input);
+                    int fromIndex = input.indexOf("/from");
+                    int toIndex = input.indexOf("/to");
+                    String description = input.substring(5, fromIndex).trim();
                     String from = input.substring(fromIndex + 5, toIndex).trim();
                     String to = input.substring(toIndex + 3).trim();
                     Event event = new Event(description, from, to);
                     luffy.tasks.add(event);
                     System.out.println(
                             addedTask + "\n" + event.toString() + "\n" + luffy.numberOfTasks());
+                } else if (input.startsWith("mark") || input.startsWith("Mark")
+                        || input.startsWith("MARK")) {
+                    luffy.validateMarkUnmarkCommand(input, true);
+                    int taskNumber = Integer.parseInt(input.split(" ")[1]);
+                    luffy.tasks.get(taskNumber - 1).setDone(true);
+                    System.out.println(
+                            "KAIZOKU! " + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon()
+                                    + " " + luffy.tasks.get(taskNumber - 1).getDescription());
+                } else if (input.startsWith("unmark") || input.startsWith("Unmark")
+                        || input.startsWith("UNMARK")) {
+                    luffy.validateMarkUnmarkCommand(input, false);
+                    int taskNumber = Integer.parseInt(input.split(" ")[1]);
+                    luffy.tasks.get(taskNumber - 1).setDone(false);
+                    System.out.println(
+                            "NANI?" + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon() + " "
+                                    + luffy.tasks.get(taskNumber - 1).getDescription());
+                } else if (!input.isEmpty()) {
+                    throw new LuffyException("I don't understand '" + input
+                            + "'! Try: todo, deadline, event, mark, unmark, list, or bye!");
                 }
-            }
 
-            if (input.startsWith("mark") || input.startsWith("Mark") || input.startsWith("MARK")) {
-                int taskNumber = Integer.parseInt(input.split(" ")[1]);
-                luffy.tasks.get(taskNumber - 1).setDone(true);
-                System.out.println(
-                        "KAIZOKU! " + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon() + " "
-                                + luffy.tasks.get(taskNumber - 1).getDescription());
-            } else if (input.startsWith("unmark") || input.startsWith("Unmark")
-                    || input.startsWith("UNMARK")) {
-                int taskNumber = Integer.parseInt(input.split(" ")[1]);
-                luffy.tasks.get(taskNumber - 1).setDone(false);
-                System.out.println("NANI?" + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon()
-                        + " " + luffy.tasks.get(taskNumber - 1).getDescription());
+            } catch (LuffyException e) {
+                System.out.println(e.getMessage());
+            } catch (Exception e) {
+                System.out.println("OOPS!!! Something went wrong! " + e.getMessage());
             }
         }
         sc.close();
