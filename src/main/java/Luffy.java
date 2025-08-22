@@ -2,12 +2,9 @@ import java.util.Scanner;
 import java.util.ArrayList;
 
 public class Luffy {
-    String greet = "____________________________________________________________\n"
-            + "Hello! I'm Luffy\n" + "Be my crewmate!\n"
-            + "____________________________________________________________\n";
-    String goodbye = "____________________________________________________________\n"
-            + "Bye! See you next time!\n" + "I'll be waiting for you to join my crew!\n"
-            + "____________________________________________________________\n";
+    String greet = "Hello! I'm Luffy\n" + "Be my crewmate!";
+    String goodbye = "Bye! See you next time!\n" + "I'll be waiting for you to join my crew!\n";
+
     ArrayList<Task> tasks = new ArrayList<>();
 
     private String numberOfTasks() {
