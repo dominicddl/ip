@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 public class Luffy {
     String greet = "____________________________________________________________\n"
@@ -7,6 +8,7 @@ public class Luffy {
     String goodbye = "____________________________________________________________\n"
             + "Bye! See you next time!\n" + "I'll be waiting for you to join my crew!\n"
             + "____________________________________________________________\n";
+    ArrayList<String> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
         Luffy luffy = new Luffy();
@@ -20,7 +22,8 @@ public class Luffy {
                 System.out.println(luffy.goodbye);
                 break;
             } else {
-                System.out.println(input);
+                luffy.tasks.add(input);
+                System.out.println("Task added: " + input);
             }
         }
         sc.close();
