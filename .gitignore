@@ -8,6 +8,9 @@
 /build/
 src/main/resources/docs/
 
+# VSCode files
+/.vscode/
+
 # MacOS custom attributes files created by Finder
 .DS_Store
 *.iml
