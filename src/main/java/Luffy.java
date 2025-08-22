@@ -1,12 +1,28 @@
+import java.util.Scanner;
+
 public class Luffy {
+    String greet = "____________________________________________________________\n"
+            + "Hello! I'm Luffy\n" + "Do you want to be my crewmate?\n"
+            + "____________________________________________________________\n";
+    String goodbye = "____________________________________________________________\n"
+            + "Bye! See you next time!\n" + "I'll be waiting for you to join my crew!\n"
+            + "____________________________________________________________\n";
+
     public static void main(String[] args) {
-        String greet = "____________________________________________________________\n"
-                + "Hello! I'm Luffy\n"
-                + "What can I do for you?\n"
-                + "____________________________________________________________\n"
-                + "Bye. Hope to see you again soon!\n"
-                + "____________________________________________________________\n";
-       
-        System.out.println(greet);
+        Luffy luffy = new Luffy();
+        System.out.println(luffy.greet);
+        Scanner sc = new Scanner(System.in);
+
+        // While scanner is open, keep asking for input
+        while (sc.hasNextLine()) {
+            String input = sc.nextLine();
+            if (input.equals("bye") || input.equals("Bye") || input.equals("BYE")) {
+                System.out.println(luffy.goodbye);
+                break;
+            } else {
+                System.out.println(input);
+            }
+        }
+        sc.close();
     }
 }
