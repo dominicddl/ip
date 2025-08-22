@@ -23,10 +23,24 @@ public class Luffy {
                 System.out.println(luffy.goodbye);
                 break;
             } else if (input.equals("list") || input.equals("List") || input.equals("LIST")) {
+                System.out.println("Here are the tasks in your list:");
                 for (int i = 0; i < luffy.tasks.size(); i++) {
                     System.out.println(i + 1 + ". " + luffy.tasks.get(i).getStatusIcon() + " "
                             + luffy.tasks.get(i).getDescription());
                 }
+            } else if (input.startsWith("mark") || input.startsWith("Mark")
+                    || input.startsWith("MARK")) {
+                int taskNumber = Integer.parseInt(input.split(" ")[1]);
+                luffy.tasks.get(taskNumber - 1).setDone(true);
+                System.out.println(
+                        "KAIZOKU! " + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon() + " "
+                                + luffy.tasks.get(taskNumber - 1).getDescription());
+            } else if (input.startsWith("unmark") || input.startsWith("Unmark")
+                    || input.startsWith("UNMARK")) {
+                int taskNumber = Integer.parseInt(input.split(" ")[1]);
+                luffy.tasks.get(taskNumber - 1).setDone(false);
+                System.out.println("NANI?" + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon()
+                        + " " + luffy.tasks.get(taskNumber - 1).getDescription());
             } else {
                 luffy.tasks.add(task);
                 System.out.println("Task added: " + task.getDescription());
