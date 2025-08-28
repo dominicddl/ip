@@ -199,6 +199,64 @@ public class Luffy {
         return "Check the date format and try again.";
     }
 
+    /**
+     * Shows all deadlines and events occurring on a specific date.
+     */
+    private void showTasksOnDate(String dateStr) throws LuffyException {
+        LocalDateTime targetDate;
+        try {
+            targetDate = parseDateTime(dateStr);
+        } catch (LuffyException e) {
+            throw new LuffyException("Invalid date format for 'due' command. " + e.getMessage());
+        }
+
+        // Get just the date part (ignore time for comparison)
+        LocalDate targetDateOnly = targetDate.toLocalDate();
+
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+
+        for (Task task : tasks) {
+            boolean matches = false;
+
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.hasDateTime()) {
+                    LocalDate deadlineDate = deadline.getBy().toLocalDate();
+                    if (deadlineDate.equals(targetDateOnly)) {
+                        matches = true;
+                    }
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                if (event.hasDateTime()) {
+                    LocalDate eventStartDate = event.getFrom().toLocalDate();
+                    LocalDate eventEndDate = event.getTo().toLocalDate();
+
+                    // Event matches if target date falls within the event's date range
+                    if (!targetDateOnly.isBefore(eventStartDate)
+                            && !targetDateOnly.isAfter(eventEndDate)) {
+                        matches = true;
+                    }
+                }
+            }
+
+            if (matches) {
+                matchingTasks.add(task);
+            }
+        }
+
+        // Display results
+        String formattedDate = DateTimeUtil.formatDateTime(targetDate);
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No deadlines or events found on " + formattedDate + "!");
+        } else {
+            System.out.println("Here are your tasks on " + formattedDate + ":");
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println((i + 1) + ". " + matchingTasks.get(i).toString());
+            }
+        }
+    }
+
 
 
     private void saveTasksToFile() {
@@ -452,9 +510,20 @@ public class Luffy {
                     luffy.saveTasksToFile();
                     System.out.println("HAI! TASK DELETED:\n" + deletedTask.toString() + "\n"
                             + luffy.numberOfTasks());
+                }
+                // Show tasks on a specific date
+                else if (input.startsWith("due") || input.startsWith("Due")
+                        || input.startsWith("DUE")) {
+                    String[] parts = input.split(" ", 2);
+                    if (parts.length < 2 || parts[1].trim().isEmpty()) {
+                        throw new LuffyException(
+                                "Which date do you want to check? Use: due 2019-12-02");
+                    }
+                    String dateStr = parts[1].trim();
+                    luffy.showTasksOnDate(dateStr);
                 } else if (!input.isEmpty()) {
                     throw new LuffyException("I don't understand '" + input
-                            + "'! Try: todo, deadline, event, mark, unmark, delete, list, or bye!");
+                            + "'! Try: todo, deadline, event, mark, unmark, delete, list, due, or bye!");
                 }
 
             } catch (LuffyException e) {
