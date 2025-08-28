@@ -5,6 +5,10 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class Luffy {
     String greet = "Hello! I'm Luffy\n" + "Be my crewmate!";
@@ -115,6 +119,146 @@ public class Luffy {
         }
     }
 
+    /**
+     * Parses a date/time string into LocalDateTime. Supports formats: - yyyy-mm-dd (date only, time
+     * defaults to 23:59) - yyyy-mm-dd HHmm (date with time in 24-hour format) - yyyy-mm-dd HH:mm
+     * (date with time in 24-hour format) - yyyy-mm-dd h:mm AM/PM (date with time in 12-hour format)
+     * - d/m/yyyy (date only, time defaults to 23:59) - d/m/yyyy HHmm (date with time in 24-hour
+     * format) - d/m/yyyy HH:mm (date with time in 24-hour format) - d/m/yyyy h:mm AM/PM (date with
+     * time in 12-hour format)
+     */
+    private LocalDateTime parseDateTime(String dateTimeStr) throws LuffyException {
+        dateTimeStr = dateTimeStr.trim();
+
+        // Define possible formatters
+        DateTimeFormatter[] formatters = {
+                // yyyy-mm-dd formats
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                // d/m/yyyy formats
+                DateTimeFormatter.ofPattern("d/M/yyyy HHmm"),
+                DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("d/M/yyyy h:mm a"),
+                DateTimeFormatter.ofPattern("d/M/yyyy")};
+
+        // Try parsing with each formatter
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                if (dateTimeStr.matches(".*\\d{4}-\\d{2}-\\d{2}$")
+                        || dateTimeStr.matches(".*\\d{1,2}/\\d{1,2}/\\d{4}$")) {
+                    // Date only formats - parse as LocalDate and set time to 23:59
+                    LocalDate date = LocalDate.parse(dateTimeStr, formatter);
+                    return date.atTime(23, 59);
+                } else {
+                    // Date with time formats
+                    return LocalDateTime.parse(dateTimeStr, formatter);
+                }
+            } catch (DateTimeParseException e) {
+                // Continue to next formatter
+            }
+        }
+
+        // If no formatter worked, provide helpful error message with suggestions
+        String suggestion = getDateFormatSuggestion(dateTimeStr);
+        throw new LuffyException("Invalid date/time format: '" + dateTimeStr + "'. " + suggestion
+                + " Valid formats: 2019-12-02, 2019-12-02 1800, 2019-12-02 18:00, 2019-12-02 6:00 PM, "
+                + "2/12/2019, 2/12/2019 1800, 2/12/2019 18:00, or 2/12/2019 6:00 PM");
+    }
+
+    /**
+     * Validates that the event start time is before end time.
+     */
+    private void validateEventTimes(LocalDateTime from, LocalDateTime to, String originalFromStr,
+            String originalToStr) throws LuffyException {
+        if (from.isAfter(to)) {
+            throw new LuffyException("Event start time '" + originalFromStr
+                    + "' cannot be after end time '" + originalToStr + "'!");
+        }
+        if (from.equals(to)) {
+            throw new LuffyException("Event start time and end time cannot be the same! '"
+                    + originalFromStr + "' = '" + originalToStr + "'");
+        }
+    }
+
+    /**
+     * Provides helpful suggestions for common date format mistakes.
+     */
+    private String getDateFormatSuggestion(String invalidDate) {
+        if (invalidDate.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+            return "Did you mean to use '/' instead of '-'? Try: " + invalidDate.replace("-", "/");
+        }
+        if (invalidDate.matches("\\d{4}/\\d{1,2}/\\d{1,2}")) {
+            return "For yyyy/mm/dd format, use '-' instead: " + invalidDate.replace("/", "-");
+        }
+        if (invalidDate.matches("\\d{1,2}/\\d{1,2}/\\d{2}")) {
+            return "Use 4-digit year: " + invalidDate.substring(0, invalidDate.length() - 2) + "20"
+                    + invalidDate.substring(invalidDate.length() - 2);
+        }
+        return "Check the date format and try again.";
+    }
+
+    /**
+     * Shows all deadlines and events occurring on a specific date.
+     */
+    private void showTasksOnDate(String dateStr) throws LuffyException {
+        LocalDateTime targetDate;
+        try {
+            targetDate = parseDateTime(dateStr);
+        } catch (LuffyException e) {
+            throw new LuffyException("Invalid date format for 'due' command. " + e.getMessage());
+        }
+
+        // Get just the date part (ignore time for comparison)
+        LocalDate targetDateOnly = targetDate.toLocalDate();
+
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+
+        for (Task task : tasks) {
+            boolean matches = false;
+
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.hasDateTime()) {
+                    LocalDate deadlineDate = deadline.getBy().toLocalDate();
+                    if (deadlineDate.equals(targetDateOnly)) {
+                        matches = true;
+                    }
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                if (event.hasDateTime()) {
+                    LocalDate eventStartDate = event.getFrom().toLocalDate();
+                    LocalDate eventEndDate = event.getTo().toLocalDate();
+
+                    // Event matches if target date falls within the event's date range
+                    if (!targetDateOnly.isBefore(eventStartDate)
+                            && !targetDateOnly.isAfter(eventEndDate)) {
+                        matches = true;
+                    }
+                }
+            }
+
+            if (matches) {
+                matchingTasks.add(task);
+            }
+        }
+
+        // Display results
+        String formattedDate = DateTimeUtil.formatDateTime(targetDate);
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No deadlines or events found on " + formattedDate + "!");
+        } else {
+            System.out.println("Here are your tasks on " + formattedDate + ":");
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println((i + 1) + ". " + matchingTasks.get(i).toString());
+            }
+        }
+    }
+
+
+
     private void saveTasksToFile() {
         try {
             // Create data directory if it doesn't exist
@@ -132,12 +276,28 @@ public class Luffy {
                     line = "T | " + status + " | " + task.getDescription();
                 } else if (task instanceof Deadline) {
                     Deadline deadline = (Deadline) task;
-                    line = "D | " + status + " | " + task.getDescription() + " | "
-                            + deadline.getBy();
+                    if (deadline.hasDateTime()) {
+                        // Save LocalDateTime in ISO format for new data
+                        line = "D | " + status + " | " + task.getDescription() + " | "
+                                + DateTimeUtil.formatDateTimeForFile(deadline.getBy());
+                    } else {
+                        // Save as string for backward compatibility
+                        line = "D | " + status + " | " + task.getDescription() + " | "
+                                + deadline.getByAsString();
+                    }
                 } else if (task instanceof Event) {
                     Event event = (Event) task;
-                    line = "E | " + status + " | " + task.getDescription() + " | "
-                            + event.getDuration();
+                    if (event.hasDateTime()) {
+                        // Save LocalDateTime in ISO format for new data (separate from and to
+                        // fields)
+                        line = "E | " + status + " | " + task.getDescription() + " | "
+                                + DateTimeUtil.formatDateTimeForFile(event.getFrom()) + " | "
+                                + DateTimeUtil.formatDateTimeForFile(event.getTo());
+                    } else {
+                        // Save as combined string for backward compatibility
+                        line = "E | " + status + " | " + task.getDescription() + " | "
+                                + event.getDuration();
+                    }
                 }
 
                 writer.write(line + System.lineSeparator());
@@ -193,23 +353,47 @@ public class Luffy {
                                     + lineNumber + ": " + line);
                             continue;
                         }
-                        String by = parts[3].trim();
-                        task = new Deadline(description, by);
+                        String byString = parts[3].trim();
+
+                        // Try to parse as ISO LocalDateTime first (new format)
+                        try {
+                            LocalDateTime by = DateTimeUtil.parseDateTimeFromFile(byString);
+                            task = new Deadline(description, by);
+                        } catch (Exception e) {
+                            // If ISO parsing fails, treat as old string format
+                            task = new Deadline(description, byString);
+                        }
                     } else if (taskType.equals("E")) {
-                        if (parts.length != 4) {
+                        if (parts.length == 5) {
+                            // New format: E | status | description | from_iso | to_iso
+                            String fromString = parts[3].trim();
+                            String toString = parts[4].trim();
+
+                            try {
+                                LocalDateTime from = DateTimeUtil.parseDateTimeFromFile(fromString);
+                                LocalDateTime to = DateTimeUtil.parseDateTimeFromFile(toString);
+                                task = new Event(description, from, to);
+                            } catch (Exception e) {
+                                System.out.println("OOPS!!! Invalid date format in Event at line "
+                                        + lineNumber + ": " + line);
+                                continue;
+                            }
+                        } else if (parts.length == 4) {
+                            // Old format: E | status | description | duration
+                            String duration = parts[3].trim();
+                            // Parse duration back to from and to
+                            String[] durationParts = duration.split(" to ");
+                            if (durationParts.length != 2) {
+                                System.out.println("OOPS!!! Corrupted Event duration at line "
+                                        + lineNumber + ": " + line);
+                                continue;
+                            }
+                            task = new Event(description, durationParts[0], durationParts[1]);
+                        } else {
                             System.out.println("OOPS!!! Corrupted Event data at line " + lineNumber
                                     + ": " + line);
                             continue;
                         }
-                        String duration = parts[3].trim();
-                        // Parse duration back to from and to
-                        String[] durationParts = duration.split(" to ");
-                        if (durationParts.length != 2) {
-                            System.out.println("OOPS!!! Corrupted Event duration at line "
-                                    + lineNumber + ": " + line);
-                            continue;
-                        }
-                        task = new Event(description, durationParts[0], durationParts[1]);
                     } else {
                         System.out.println(
                                 "OOPS!!! Unknown task type at line " + lineNumber + ": " + line);
@@ -276,8 +460,18 @@ public class Luffy {
                     luffy.validateDeadlineCommand(input);
                     int byIndex = input.indexOf("/by");
                     String description = input.substring(8, byIndex).trim();
-                    String by = input.substring(byIndex + 3).trim();
-                    Deadline deadline = new Deadline(description, by);
+                    String byStr = input.substring(byIndex + 3).trim();
+
+                    // Try to parse as date/time, fall back to string if parsing fails
+                    Deadline deadline;
+                    try {
+                        LocalDateTime by = luffy.parseDateTime(byStr);
+                        deadline = new Deadline(description, by);
+                    } catch (LuffyException e) {
+                        // If date parsing fails, create with string (backward compatibility)
+                        deadline = new Deadline(description, byStr);
+                    }
+
                     luffy.tasks.add(deadline);
                     luffy.saveTasksToFile();
                     System.out.println(
@@ -290,9 +484,24 @@ public class Luffy {
                     int fromIndex = input.indexOf("/from");
                     int toIndex = input.indexOf("/to");
                     String description = input.substring(5, fromIndex).trim();
-                    String from = input.substring(fromIndex + 5, toIndex).trim();
-                    String to = input.substring(toIndex + 3).trim();
-                    Event event = new Event(description, from, to);
+                    String fromStr = input.substring(fromIndex + 5, toIndex).trim();
+                    String toStr = input.substring(toIndex + 3).trim();
+
+                    // Try to parse as date/time, fall back to string if parsing fails
+                    Event event;
+                    try {
+                        LocalDateTime from = luffy.parseDateTime(fromStr);
+                        LocalDateTime to = luffy.parseDateTime(toStr);
+
+                        // Validate that start time is before end time
+                        luffy.validateEventTimes(from, to, fromStr, toStr);
+
+                        event = new Event(description, from, to);
+                    } catch (LuffyException e) {
+                        // If date parsing fails, create with strings (backward compatibility)
+                        event = new Event(description, fromStr, toStr);
+                    }
+
                     luffy.tasks.add(event);
                     luffy.saveTasksToFile();
                     System.out.println(
@@ -326,9 +535,20 @@ public class Luffy {
                     luffy.saveTasksToFile();
                     System.out.println("HAI! TASK DELETED:\n" + deletedTask.toString() + "\n"
                             + luffy.numberOfTasks());
+                }
+                // Show tasks on a specific date
+                else if (input.startsWith("due") || input.startsWith("Due")
+                        || input.startsWith("DUE")) {
+                    String[] parts = input.split(" ", 2);
+                    if (parts.length < 2 || parts[1].trim().isEmpty()) {
+                        throw new LuffyException(
+                                "Which date do you want to check? Use: due 2019-12-02");
+                    }
+                    String dateStr = parts[1].trim();
+                    luffy.showTasksOnDate(dateStr);
                 } else if (!input.isEmpty()) {
                     throw new LuffyException("I don't understand '" + input
-                            + "'! Try: todo, deadline, event, mark, unmark, delete, list, or bye!");
+                            + "'! Try: todo, deadline, event, mark, unmark, delete, list, due, or bye!");
                 }
 
             } catch (LuffyException e) {
