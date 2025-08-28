@@ -50,6 +50,20 @@ public class Ui {
     }
 
     /**
+     * Shows a divider line.
+     */
+    public void showLine() {
+        System.out.println("    ____________________________________________________________");
+    }
+
+    /**
+     * Shows an error message.
+     */
+    public void showError(String message) {
+        System.out.println(message);
+    }
+
+    /**
      * Shows tasks occurring on a specific date.
      */
     public void showTasksOnDate(ArrayList<Task> matchingTasks, LocalDateTime targetDate) {

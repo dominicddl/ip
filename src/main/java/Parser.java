@@ -201,4 +201,117 @@ public class Parser {
                     "'" + parts[1] + "' is not a number! Give me a proper task number!");
         }
     }
+
+    /**
+     * Parses user input and returns the appropriate Command object.
+     */
+    public static Command parse(String fullCommand) throws LuffyException {
+        String input = fullCommand.trim();
+
+        // If input is "bye", return ExitCommand
+        if (input.equals("bye") || input.equals("Bye") || input.equals("BYE")) {
+            return new ExitCommand();
+        }
+
+        // If input is "list", return ListCommand
+        if (input.equals("list") || input.equals("List") || input.equals("LIST")) {
+            return new ListCommand();
+        }
+
+        // If input starts with "todo", return AddTodoCommand
+        if (input.startsWith("todo") || input.startsWith("Todo") || input.startsWith("TODO")) {
+            validateTodoCommand(input);
+            String description = input.substring(4).trim();
+            return new AddTodoCommand(description);
+        }
+
+        // If input starts with "deadline", return AddDeadlineCommand
+        if (input.startsWith("deadline") || input.startsWith("Deadline")
+                || input.startsWith("DEADLINE")) {
+            validateDeadlineCommand(input);
+            int byIndex = input.indexOf("/by");
+            String description = input.substring(8, byIndex).trim();
+            String byStr = input.substring(byIndex + 3).trim();
+            return new AddDeadlineCommand(description, byStr);
+        }
+
+        // If input starts with "event", return AddEventCommand
+        if (input.startsWith("event") || input.startsWith("Event") || input.startsWith("EVENT")) {
+            validateEventCommand(input);
+            int fromIndex = input.indexOf("/from");
+            int toIndex = input.indexOf("/to");
+            String description = input.substring(5, fromIndex).trim();
+            String fromStr = input.substring(fromIndex + 5, toIndex).trim();
+            String toStr = input.substring(toIndex + 3).trim();
+            return new AddEventCommand(description, fromStr, toStr);
+        }
+
+        // If input starts with "mark", return MarkCommand
+        if (input.startsWith("mark") || input.startsWith("Mark") || input.startsWith("MARK")) {
+            // We need to pass taskCount for validation, but we don't have access to it here
+            // We'll validate in the command execution instead
+            String[] parts = input.split(" ");
+            if (parts.length < 2) {
+                throw new LuffyException("Which task do you want me to mark? Give me a number!");
+            }
+            try {
+                int taskNumber = Integer.parseInt(parts[1]);
+                return new MarkCommand(taskNumber);
+            } catch (NumberFormatException e) {
+                throw new LuffyException(
+                        "'" + parts[1] + "' is not a number! Give me a proper task number!");
+            }
+        }
+
+        // If input starts with "unmark", return UnmarkCommand
+        if (input.startsWith("unmark") || input.startsWith("Unmark")
+                || input.startsWith("UNMARK")) {
+            String[] parts = input.split(" ");
+            if (parts.length < 2) {
+                throw new LuffyException("Which task do you want me to unmark? Give me a number!");
+            }
+            try {
+                int taskNumber = Integer.parseInt(parts[1]);
+                return new UnmarkCommand(taskNumber);
+            } catch (NumberFormatException e) {
+                throw new LuffyException(
+                        "'" + parts[1] + "' is not a number! Give me a proper task number!");
+            }
+        }
+
+        // If input starts with "delete", return DeleteCommand
+        if (input.startsWith("delete") || input.startsWith("Delete")
+                || input.startsWith("DELETE")) {
+            String[] parts = input.split(" ");
+            if (parts.length < 2) {
+                throw new LuffyException("Which task do you want me to delete? Give me a number!");
+            }
+            try {
+                int taskNumber = Integer.parseInt(parts[1]);
+                return new DeleteCommand(taskNumber);
+            } catch (NumberFormatException e) {
+                throw new LuffyException(
+                        "'" + parts[1] + "' is not a number! Give me a proper task number!");
+            }
+        }
+
+        // If input starts with "due", return DueCommand
+        if (input.startsWith("due") || input.startsWith("Due") || input.startsWith("DUE")) {
+            String[] parts = input.split(" ", 2);
+            if (parts.length < 2 || parts[1].trim().isEmpty()) {
+                throw new LuffyException("Which date do you want to check? Use: due 2019-12-02");
+            }
+            String dateStr = parts[1].trim();
+            return new DueCommand(dateStr);
+        }
+
+        // If we get here, it's an unknown command
+        if (!input.isEmpty()) {
+            throw new LuffyException("I don't understand '" + input
+                    + "'! Try: todo, deadline, event, mark, unmark, delete, list, due, or bye!");
+        }
+
+        // Empty input - just return null or handle as needed
+        throw new LuffyException("Please enter a command!");
+    }
 }
