@@ -237,6 +237,7 @@ public class Luffy {
 
     public static void main(String[] args) {
         Luffy luffy = new Luffy();
+        luffy.loadTasksFromFile(); // Load existing tasks from file at startup
         System.out.println(luffy.greet);
         Scanner sc = new Scanner(System.in);
         String addedTask = "HAI! TASK ADDED:";
@@ -265,6 +266,7 @@ public class Luffy {
                     String description = input.substring(4).trim();
                     Todo todo = new Todo(description);
                     luffy.tasks.add(todo);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             addedTask + "\n" + todo.toString() + "\n" + luffy.numberOfTasks());
                 }
@@ -277,6 +279,7 @@ public class Luffy {
                     String by = input.substring(byIndex + 3).trim();
                     Deadline deadline = new Deadline(description, by);
                     luffy.tasks.add(deadline);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             addedTask + "\n" + deadline.toString() + "\n" + luffy.numberOfTasks());
                 }
@@ -291,6 +294,7 @@ public class Luffy {
                     String to = input.substring(toIndex + 3).trim();
                     Event event = new Event(description, from, to);
                     luffy.tasks.add(event);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             addedTask + "\n" + event.toString() + "\n" + luffy.numberOfTasks());
                 } else if (input.startsWith("mark") || input.startsWith("Mark")
@@ -298,6 +302,7 @@ public class Luffy {
                     luffy.validateMarkUnmarkCommand(input, true);
                     int taskNumber = Integer.parseInt(input.split(" ")[1]);
                     luffy.tasks.get(taskNumber - 1).setDone(true);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             "KAIZOKU! " + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon()
                                     + " " + luffy.tasks.get(taskNumber - 1).getDescription());
@@ -306,6 +311,7 @@ public class Luffy {
                     luffy.validateMarkUnmarkCommand(input, false);
                     int taskNumber = Integer.parseInt(input.split(" ")[1]);
                     luffy.tasks.get(taskNumber - 1).setDone(false);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             "NANI?" + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon() + " "
                                     + luffy.tasks.get(taskNumber - 1).getDescription());
@@ -317,6 +323,7 @@ public class Luffy {
                     int taskNumber = Integer.parseInt(input.split(" ")[1]);
                     Task deletedTask = luffy.tasks.get(taskNumber - 1);
                     luffy.tasks.remove(taskNumber - 1);
+                    luffy.saveTasksToFile();
                     System.out.println("HAI! TASK DELETED:\n" + deletedTask.toString() + "\n"
                             + luffy.numberOfTasks());
                 } else if (!input.isEmpty()) {
