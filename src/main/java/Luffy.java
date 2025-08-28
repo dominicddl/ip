@@ -460,8 +460,18 @@ public class Luffy {
                     luffy.validateDeadlineCommand(input);
                     int byIndex = input.indexOf("/by");
                     String description = input.substring(8, byIndex).trim();
-                    String by = input.substring(byIndex + 3).trim();
-                    Deadline deadline = new Deadline(description, by);
+                    String byStr = input.substring(byIndex + 3).trim();
+
+                    // Try to parse as date/time, fall back to string if parsing fails
+                    Deadline deadline;
+                    try {
+                        LocalDateTime by = luffy.parseDateTime(byStr);
+                        deadline = new Deadline(description, by);
+                    } catch (LuffyException e) {
+                        // If date parsing fails, create with string (backward compatibility)
+                        deadline = new Deadline(description, byStr);
+                    }
+
                     luffy.tasks.add(deadline);
                     luffy.saveTasksToFile();
                     System.out.println(
@@ -474,9 +484,24 @@ public class Luffy {
                     int fromIndex = input.indexOf("/from");
                     int toIndex = input.indexOf("/to");
                     String description = input.substring(5, fromIndex).trim();
-                    String from = input.substring(fromIndex + 5, toIndex).trim();
-                    String to = input.substring(toIndex + 3).trim();
-                    Event event = new Event(description, from, to);
+                    String fromStr = input.substring(fromIndex + 5, toIndex).trim();
+                    String toStr = input.substring(toIndex + 3).trim();
+
+                    // Try to parse as date/time, fall back to string if parsing fails
+                    Event event;
+                    try {
+                        LocalDateTime from = luffy.parseDateTime(fromStr);
+                        LocalDateTime to = luffy.parseDateTime(toStr);
+
+                        // Validate that start time is before end time
+                        luffy.validateEventTimes(from, to, fromStr, toStr);
+
+                        event = new Event(description, from, to);
+                    } catch (LuffyException e) {
+                        // If date parsing fails, create with strings (backward compatibility)
+                        event = new Event(description, fromStr, toStr);
+                    }
+
                     luffy.tasks.add(event);
                     luffy.saveTasksToFile();
                     System.out.println(
