@@ -14,21 +14,39 @@ import luffy.task.Event;
 import luffy.util.DateTimeUtil;
 
 /**
- * Handles the loading and saving of tasks to and from the file.
+ * Handles the loading and saving of tasks to and from the file. This class manages file I/O
+ * operations for task persistence, supporting both new LocalDateTime-based tasks and legacy
+ * string-based tasks for backward compatibility. The file format uses pipe-separated values with
+ * different formats for each task type.
  */
 public class Storage {
     private String filePath;
 
+    /**
+     * Creates a new Storage instance with the specified file path.
+     *
+     * @param filePath the path to the file where tasks will be stored
+     */
     public Storage(String filePath) {
         this.filePath = filePath;
     }
 
+    /**
+     * Returns the file path used by this Storage instance.
+     *
+     * @return the file path for task storage
+     */
     public String getFilePath() {
         return filePath;
     }
 
     /**
-     * Saves the task list to the file.
+     * Saves the task list to the file in a pipe-separated format. Creates the data directory if it
+     * doesn't exist. Supports both LocalDateTime-based tasks (saved in ISO format) and legacy
+     * string-based tasks (saved in original format).
+     *
+     * @param tasks the list of tasks to save
+     * @throws IOException if the file cannot be written to
      */
     public void save(ArrayList<Task> tasks) throws IOException {
         // Create data directory if it doesn't exist
@@ -76,10 +94,13 @@ public class Storage {
     }
 
     /**
-     * Loads tasks from the file.
-     * 
-     * @return ArrayList of tasks loaded from file
-     * @throws IOException if file cannot be read
+     * Loads tasks from the file, parsing each line according to the task format. Supports both new
+     * LocalDateTime-based format and legacy string-based format. Handles corrupted data gracefully
+     * by skipping invalid lines and printing error messages. Returns an empty list if the file
+     * doesn't exist.
+     *
+     * @return ArrayList of tasks loaded from file, empty if file doesn't exist
+     * @throws IOException if the file cannot be read
      */
     public ArrayList<Task> load() throws IOException {
         ArrayList<Task> tasks = new ArrayList<>();
