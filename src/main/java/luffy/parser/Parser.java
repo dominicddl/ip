@@ -8,17 +8,26 @@ import luffy.exception.LuffyException;
 import luffy.command.*;
 
 /**
- * Deals with making sense of the user command and parsing date/time strings.
+ * Deals with making sense of the user command and parsing date/time strings. This class provides
+ * static methods to parse user input commands into Command objects and to parse date/time strings
+ * in various formats into LocalDateTime objects. It also includes validation methods for different
+ * command types.
  */
 public class Parser {
 
     /**
-     * Parses a date/time string into LocalDateTime. Supports formats: - yyyy-mm-dd (date only, time
-     * defaults to 23:59) - yyyy-mm-dd HHmm (date with time in 24-hour format) - yyyy-mm-dd HH:mm
-     * (date with time in 24-hour format) - yyyy-mm-dd h:mm AM/PM (date with time in 12-hour format)
-     * - d/m/yyyy (date only, time defaults to 23:59) - d/m/yyyy HHmm (date with time in 24-hour
-     * format) - d/m/yyyy HH:mm (date with time in 24-hour format) - d/m/yyyy h:mm AM/PM (date with
-     * time in 12-hour format)
+     * Parses a date/time string into LocalDateTime object. Supports multiple date and time formats
+     * with flexible input parsing.
+     * 
+     * Supported formats: - yyyy-mm-dd (date only, time defaults to 23:59) - yyyy-mm-dd HHmm (date
+     * with time in 24-hour format) - yyyy-mm-dd HH:mm (date with time in 24-hour format) -
+     * yyyy-mm-dd h:mm AM/PM (date with time in 12-hour format) - d/m/yyyy (date only, time defaults
+     * to 23:59) - d/m/yyyy HHmm (date with time in 24-hour format) - d/m/yyyy HH:mm (date with time
+     * in 24-hour format) - d/m/yyyy h:mm AM/PM (date with time in 12-hour format)
+     *
+     * @param dateTimeStr the date/time string to parse
+     * @return LocalDateTime object representing the parsed date and time
+     * @throws LuffyException if the date/time string cannot be parsed
      */
     public static LocalDateTime parseDateTime(String dateTimeStr) throws LuffyException {
         dateTimeStr = dateTimeStr.trim();
@@ -207,7 +216,13 @@ public class Parser {
     }
 
     /**
-     * Parses user input and returns the appropriate Command object.
+     * Parses user input and returns the appropriate Command object. Supports various command types
+     * including todo, deadline, event, mark, unmark, delete, list, due, and bye commands. Command
+     * parsing is case-insensitive.
+     *
+     * @param fullCommand the complete user input command string
+     * @return Command object corresponding to the user's input
+     * @throws LuffyException if the command is unknown or has invalid format
      */
     public static Command parse(String fullCommand) throws LuffyException {
         String input = fullCommand.trim();
