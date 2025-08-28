@@ -15,7 +15,7 @@ public class Luffy {
     String goodbye = "Bye! See you next time!\n" + "I'll be waiting for you to join my crew!\n";
 
     ArrayList<Task> tasks = new ArrayList<>();
-    private static final String DATA_FILE_PATH = "data" + File.separator + "Luffy.txt";
+    private Storage storage;
 
     private String numberOfTasks() {
         return "Now you have " + tasks.size() + " tasks in the list.";
@@ -267,7 +267,7 @@ public class Luffy {
                 dataDir.mkdirs();
             }
 
-            FileWriter writer = new FileWriter(DATA_FILE_PATH);
+            FileWriter writer = new FileWriter(storage.getFilePath());
             for (Task task : tasks) {
                 String line = "";
                 int status = task.isDone() ? 1 : 0;
@@ -309,13 +309,13 @@ public class Luffy {
     }
 
     private void loadTasksFromFile() {
-        File file = new File(DATA_FILE_PATH);
+        File file = new File(storage.getFilePath());
         if (!file.exists()) {
             return; // No file to load from, start with empty task list
         }
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE_PATH));
+            BufferedReader reader = new BufferedReader(new FileReader(storage.getFilePath()));
             String line;
             int lineNumber = 0;
 
@@ -421,6 +421,7 @@ public class Luffy {
 
     public static void main(String[] args) {
         Luffy luffy = new Luffy();
+        luffy.storage = new Storage("data" + File.separator + "Luffy.txt");
         luffy.loadTasksFromFile(); // Load existing tasks from file at startup
         System.out.println(luffy.greet);
         Scanner sc = new Scanner(System.in);
