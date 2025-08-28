@@ -7,12 +7,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class Luffy {
-    ArrayList<Task> tasks = new ArrayList<>();
+    private TaskList tasks;
     private Storage storage;
     private Ui ui;
 
     private String numberOfTasks() {
-        return "Now you have " + tasks.size() + " tasks in the list.";
+        return tasks.getTaskCountMessage();
     }
 
     private void validateTodoCommand(String input) throws LuffyException {
@@ -209,7 +209,7 @@ public class Luffy {
 
         ArrayList<Task> matchingTasks = new ArrayList<>();
 
-        for (Task task : tasks) {
+        for (Task task : tasks.getTasks()) {
             boolean matches = false;
 
             if (task instanceof Deadline) {
@@ -255,7 +255,7 @@ public class Luffy {
 
     private void saveTasksToFile() {
         try {
-            storage.save(tasks);
+            storage.save(tasks.getTasks());
         } catch (IOException e) {
             System.out.println("OOPS!!! Couldn't save tasks to file: " + e.getMessage());
         }
@@ -263,7 +263,8 @@ public class Luffy {
 
     private void loadTasksFromFile() {
         try {
-            tasks = storage.load();
+            ArrayList<Task> loadedTasks = storage.load();
+            tasks = new TaskList(loadedTasks);
         } catch (IOException e) {
             System.out.println("OOPS!!! Couldn't load tasks from file: " + e.getMessage());
         }
@@ -273,6 +274,7 @@ public class Luffy {
         Luffy luffy = new Luffy();
         luffy.ui = new Ui();
         luffy.storage = new Storage("data" + File.separator + "Luffy.txt");
+        luffy.tasks = new TaskList();
         luffy.loadTasksFromFile(); // Load existing tasks from file at startup
         luffy.ui.showWelcome();
         String addedTask = "HAI! TASK ADDED:";
