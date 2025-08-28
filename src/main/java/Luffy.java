@@ -1,4 +1,3 @@
-import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.IOException;
@@ -8,11 +7,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class Luffy {
-    String greet = "Hello! I'm Luffy\n" + "Be my crewmate!";
-    String goodbye = "Bye! See you next time!\n" + "I'll be waiting for you to join my crew!\n";
-
     ArrayList<Task> tasks = new ArrayList<>();
     private Storage storage;
+    private Ui ui;
 
     private String numberOfTasks() {
         return "Now you have " + tasks.size() + " tasks in the list.";
@@ -274,20 +271,20 @@ public class Luffy {
 
     public static void main(String[] args) {
         Luffy luffy = new Luffy();
+        luffy.ui = new Ui();
         luffy.storage = new Storage("data" + File.separator + "Luffy.txt");
         luffy.loadTasksFromFile(); // Load existing tasks from file at startup
-        System.out.println(luffy.greet);
-        Scanner sc = new Scanner(System.in);
+        luffy.ui.showWelcome();
         String addedTask = "HAI! TASK ADDED:";
 
         // While scanner is open, keep asking for input
-        while (sc.hasNextLine()) {
-            String input = sc.nextLine().trim();
+        while (luffy.ui.hasNextLine()) {
+            String input = luffy.ui.readCommand();
 
             try {
                 // If input is "bye", print goodbye message and break loop
                 if (input.equals("bye") || input.equals("Bye") || input.equals("BYE")) {
-                    System.out.println(luffy.goodbye);
+                    luffy.ui.showGoodbye();
                     break;
                 }
 
@@ -411,6 +408,6 @@ public class Luffy {
                 System.out.println("OOPS!!! Something went wrong! " + e.getMessage());
             }
         }
-        sc.close();
+        luffy.ui.close();
     }
 }
