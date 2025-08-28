@@ -1,8 +1,6 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -267,111 +265,8 @@ public class Luffy {
     }
 
     private void loadTasksFromFile() {
-        File file = new File(storage.getFilePath());
-        if (!file.exists()) {
-            return; // No file to load from, start with empty task list
-        }
-
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(storage.getFilePath()));
-            String line;
-            int lineNumber = 0;
-
-            while ((line = reader.readLine()) != null) {
-                lineNumber++;
-                line = line.trim();
-                if (line.isEmpty()) {
-                    continue; // Skip empty lines
-                }
-
-                try {
-                    String[] parts = line.split(" \\| ");
-                    if (parts.length < 3) {
-                        System.out.println(
-                                "OOPS!!! Corrupted data found at line " + lineNumber + ": " + line);
-                        continue;
-                    }
-
-                    String taskType = parts[0].trim();
-                    int status = Integer.parseInt(parts[1].trim());
-                    String description = parts[2].trim();
-
-                    Task task = null;
-
-                    if (taskType.equals("T")) {
-                        if (parts.length != 3) {
-                            System.out.println("OOPS!!! Corrupted Todo data at line " + lineNumber
-                                    + ": " + line);
-                            continue;
-                        }
-                        task = new Todo(description);
-                    } else if (taskType.equals("D")) {
-                        if (parts.length != 4) {
-                            System.out.println("OOPS!!! Corrupted Deadline data at line "
-                                    + lineNumber + ": " + line);
-                            continue;
-                        }
-                        String byString = parts[3].trim();
-
-                        // Try to parse as ISO LocalDateTime first (new format)
-                        try {
-                            LocalDateTime by = DateTimeUtil.parseDateTimeFromFile(byString);
-                            task = new Deadline(description, by);
-                        } catch (Exception e) {
-                            // If ISO parsing fails, treat as old string format
-                            task = new Deadline(description, byString);
-                        }
-                    } else if (taskType.equals("E")) {
-                        if (parts.length == 5) {
-                            // New format: E | status | description | from_iso | to_iso
-                            String fromString = parts[3].trim();
-                            String toString = parts[4].trim();
-
-                            try {
-                                LocalDateTime from = DateTimeUtil.parseDateTimeFromFile(fromString);
-                                LocalDateTime to = DateTimeUtil.parseDateTimeFromFile(toString);
-                                task = new Event(description, from, to);
-                            } catch (Exception e) {
-                                System.out.println("OOPS!!! Invalid date format in Event at line "
-                                        + lineNumber + ": " + line);
-                                continue;
-                            }
-                        } else if (parts.length == 4) {
-                            // Old format: E | status | description | duration
-                            String duration = parts[3].trim();
-                            // Parse duration back to from and to
-                            String[] durationParts = duration.split(" to ");
-                            if (durationParts.length != 2) {
-                                System.out.println("OOPS!!! Corrupted Event duration at line "
-                                        + lineNumber + ": " + line);
-                                continue;
-                            }
-                            task = new Event(description, durationParts[0], durationParts[1]);
-                        } else {
-                            System.out.println("OOPS!!! Corrupted Event data at line " + lineNumber
-                                    + ": " + line);
-                            continue;
-                        }
-                    } else {
-                        System.out.println(
-                                "OOPS!!! Unknown task type at line " + lineNumber + ": " + line);
-                        continue;
-                    }
-
-                    if (task != null) {
-                        task.setDone(status == 1);
-                        tasks.add(task);
-                    }
-
-                } catch (NumberFormatException e) {
-                    System.out.println(
-                            "OOPS!!! Invalid status format at line " + lineNumber + ": " + line);
-                } catch (Exception e) {
-                    System.out.println("OOPS!!! Error parsing line " + lineNumber + ": " + line
-                            + " - " + e.getMessage());
-                }
-            }
-            reader.close();
+            tasks = storage.load();
         } catch (IOException e) {
             System.out.println("OOPS!!! Couldn't load tasks from file: " + e.getMessage());
         }
