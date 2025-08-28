@@ -451,4 +451,53 @@ public class ParserTest {
             Parser.parse("due");
         });
     }
+
+    // Tests for find command parsing
+    @Test
+    public void parse_findCommand_returnsFindCommand() throws LuffyException {
+        Command result = Parser.parse("find book");
+        assertTrue(result instanceof FindCommand);
+        assertFalse(result.isExit());
+    }
+
+    @Test
+    public void parse_findCommandMultipleKeywords_returnsFindCommand() throws LuffyException {
+        Command result = Parser.parse("find read book");
+        assertTrue(result instanceof FindCommand);
+    }
+
+    @Test
+    public void parse_findCommandCaseInsensitive_returnsFindCommand() throws LuffyException {
+        Command result1 = Parser.parse("find book");
+        Command result2 = Parser.parse("Find book");
+        Command result3 = Parser.parse("FIND book");
+
+        assertTrue(result1 instanceof FindCommand);
+        assertTrue(result2 instanceof FindCommand);
+        assertTrue(result3 instanceof FindCommand);
+    }
+
+    @Test
+    public void parse_findCommandNoKeywords_throwsLuffyException() {
+        LuffyException exception = assertThrows(LuffyException.class, () -> {
+            Parser.parse("find");
+        });
+        assertTrue(exception.getMessage().contains("What do you want to find"));
+    }
+
+    @Test
+    public void parse_findCommandEmptyKeywords_throwsLuffyException() {
+        LuffyException exception = assertThrows(LuffyException.class, () -> {
+            Parser.parse("find   ");
+        });
+        assertTrue(exception.getMessage().contains("What do you want to find"));
+    }
+
+    @Test
+    public void parse_findCommandWhitespaceKeywords_throwsLuffyException() {
+        LuffyException exception = assertThrows(LuffyException.class, () -> {
+            Parser.parse("find  ");
+        });
+        assertTrue(exception.getMessage().contains("What do you want to find"));
+    }
 }

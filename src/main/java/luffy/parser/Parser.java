@@ -324,10 +324,39 @@ public class Parser {
             return new DueCommand(dateStr);
         }
 
+        // If input starts with "find", return FindCommand
+        if (input.startsWith("find") || input.startsWith("Find") || input.startsWith("FIND")) {
+            String[] parts = input.split(" ");
+            if (parts.length < 2) {
+                throw new LuffyException("What do you want to find? Give me some keywords!");
+            }
+
+            // Extract keywords (skip the "find" command word)
+            String[] keywords = new String[parts.length - 1];
+            for (int i = 1; i < parts.length; i++) {
+                keywords[i - 1] = parts[i].trim();
+            }
+
+            // Check if all keywords are empty or whitespace
+            boolean hasValidKeyword = false;
+            for (String keyword : keywords) {
+                if (!keyword.isEmpty()) {
+                    hasValidKeyword = true;
+                    break;
+                }
+            }
+
+            if (!hasValidKeyword) {
+                throw new LuffyException("What do you want to find? Give me some keywords!");
+            }
+
+            return new FindCommand(keywords);
+        }
+
         // If we get here, it's an unknown command
         if (!input.isEmpty()) {
             throw new LuffyException("I don't understand '" + input
-                    + "'! Try: todo, deadline, event, mark, unmark, delete, list, due, or bye!");
+                    + "'! Try: todo, deadline, event, mark, unmark, delete, list, due, find, or bye!");
         }
 
         // Empty input - just return null or handle as needed
