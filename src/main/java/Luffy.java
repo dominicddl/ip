@@ -5,6 +5,10 @@ import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class Luffy {
     String greet = "Hello! I'm Luffy\n" + "Be my crewmate!";
@@ -113,6 +117,81 @@ public class Luffy {
             throw new LuffyException(
                     "'" + parts[1] + "' is not a number! Give me a proper task number!");
         }
+    }
+
+    /**
+     * Parses a date/time string into LocalDateTime. Supports formats: - yyyy-mm-dd (date only, time
+     * defaults to 23:59) - yyyy-mm-dd HHmm (date with time in 24-hour format) - yyyy-mm-dd HH:mm
+     * (date with time in 24-hour format) - yyyy-mm-dd h:mm AM/PM (date with time in 12-hour format)
+     * - d/m/yyyy (date only, time defaults to 23:59) - d/m/yyyy HHmm (date with time in 24-hour
+     * format) - d/m/yyyy HH:mm (date with time in 24-hour format) - d/m/yyyy h:mm AM/PM (date with
+     * time in 12-hour format)
+     */
+    private LocalDateTime parseDateTime(String dateTimeStr) throws LuffyException {
+        dateTimeStr = dateTimeStr.trim();
+
+        // Define possible formatters
+        DateTimeFormatter[] formatters = {
+                // yyyy-mm-dd formats
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                // d/m/yyyy formats
+                DateTimeFormatter.ofPattern("d/M/yyyy HHmm"),
+                DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"),
+                DateTimeFormatter.ofPattern("d/M/yyyy h:mm a"),
+                DateTimeFormatter.ofPattern("d/M/yyyy")};
+
+        // Try parsing with each formatter
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                if (dateTimeStr.matches(".*\\d{4}-\\d{2}-\\d{2}$")
+                        || dateTimeStr.matches(".*\\d{1,2}/\\d{1,2}/\\d{4}$")) {
+                    // Date only formats - parse as LocalDate and set time to 23:59
+                    LocalDate date = LocalDate.parse(dateTimeStr, formatter);
+                    return date.atTime(23, 59);
+                } else {
+                    // Date with time formats
+                    return LocalDateTime.parse(dateTimeStr, formatter);
+                }
+            } catch (DateTimeParseException e) {
+                // Continue to next formatter
+            }
+        }
+
+        // If no formatter worked, throw exception
+        throw new LuffyException("Invalid date/time format: '" + dateTimeStr
+                + "'. Use formats like: 2019-12-02, 2019-12-02 1800, 2019-12-02 18:00, 2019-12-02 6:00 PM, "
+                + "2/12/2019, 2/12/2019 1800, 2/12/2019 18:00, or 2/12/2019 6:00 PM");
+    }
+
+    /**
+     * Formats LocalDateTime for display in a user-friendly format. Format: MMM dd yyyy, h:mm AM/PM
+     * If time is 23:59 (default for date-only input), shows date only.
+     */
+    private String formatDateTime(LocalDateTime dateTime) {
+        if (dateTime.getHour() == 23 && dateTime.getMinute() == 59) {
+            // This was likely a date-only input, show just the date
+            return dateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
+        } else {
+            // Show full date and time
+            return dateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy, h:mm a"));
+        }
+    }
+
+    /**
+     * Formats LocalDateTime for file storage in ISO format.
+     */
+    private String formatDateTimeForFile(LocalDateTime dateTime) {
+        return dateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
+
+    /**
+     * Parses LocalDateTime from file storage ISO format.
+     */
+    private LocalDateTime parseDateTimeFromFile(String dateTimeStr) throws DateTimeParseException {
+        return LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     }
 
     private void saveTasksToFile() {
