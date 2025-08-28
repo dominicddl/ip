@@ -1,11 +1,17 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.IOException;
 
 public class Luffy {
     String greet = "Hello! I'm Luffy\n" + "Be my crewmate!";
     String goodbye = "Bye! See you next time!\n" + "I'll be waiting for you to join my crew!\n";
 
     ArrayList<Task> tasks = new ArrayList<>();
+    private static final String DATA_FILE_PATH = "data" + File.separator + "Luffy.txt";
 
     private String numberOfTasks() {
         return "Now you have " + tasks.size() + " tasks in the list.";
@@ -109,8 +115,129 @@ public class Luffy {
         }
     }
 
+    private void saveTasksToFile() {
+        try {
+            // Create data directory if it doesn't exist
+            File dataDir = new File("data");
+            if (!dataDir.exists()) {
+                dataDir.mkdirs();
+            }
+
+            FileWriter writer = new FileWriter(DATA_FILE_PATH);
+            for (Task task : tasks) {
+                String line = "";
+                int status = task.isDone() ? 1 : 0;
+
+                if (task instanceof Todo) {
+                    line = "T | " + status + " | " + task.getDescription();
+                } else if (task instanceof Deadline) {
+                    Deadline deadline = (Deadline) task;
+                    line = "D | " + status + " | " + task.getDescription() + " | "
+                            + deadline.getBy();
+                } else if (task instanceof Event) {
+                    Event event = (Event) task;
+                    line = "E | " + status + " | " + task.getDescription() + " | "
+                            + event.getDuration();
+                }
+
+                writer.write(line + System.lineSeparator());
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("OOPS!!! Couldn't save tasks to file: " + e.getMessage());
+        }
+    }
+
+    private void loadTasksFromFile() {
+        File file = new File(DATA_FILE_PATH);
+        if (!file.exists()) {
+            return; // No file to load from, start with empty task list
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE_PATH));
+            String line;
+            int lineNumber = 0;
+
+            while ((line = reader.readLine()) != null) {
+                lineNumber++;
+                line = line.trim();
+                if (line.isEmpty()) {
+                    continue; // Skip empty lines
+                }
+
+                try {
+                    String[] parts = line.split(" \\| ");
+                    if (parts.length < 3) {
+                        System.out.println(
+                                "OOPS!!! Corrupted data found at line " + lineNumber + ": " + line);
+                        continue;
+                    }
+
+                    String taskType = parts[0].trim();
+                    int status = Integer.parseInt(parts[1].trim());
+                    String description = parts[2].trim();
+
+                    Task task = null;
+
+                    if (taskType.equals("T")) {
+                        if (parts.length != 3) {
+                            System.out.println("OOPS!!! Corrupted Todo data at line " + lineNumber
+                                    + ": " + line);
+                            continue;
+                        }
+                        task = new Todo(description);
+                    } else if (taskType.equals("D")) {
+                        if (parts.length != 4) {
+                            System.out.println("OOPS!!! Corrupted Deadline data at line "
+                                    + lineNumber + ": " + line);
+                            continue;
+                        }
+                        String by = parts[3].trim();
+                        task = new Deadline(description, by);
+                    } else if (taskType.equals("E")) {
+                        if (parts.length != 4) {
+                            System.out.println("OOPS!!! Corrupted Event data at line " + lineNumber
+                                    + ": " + line);
+                            continue;
+                        }
+                        String duration = parts[3].trim();
+                        // Parse duration back to from and to
+                        String[] durationParts = duration.split(" to ");
+                        if (durationParts.length != 2) {
+                            System.out.println("OOPS!!! Corrupted Event duration at line "
+                                    + lineNumber + ": " + line);
+                            continue;
+                        }
+                        task = new Event(description, durationParts[0], durationParts[1]);
+                    } else {
+                        System.out.println(
+                                "OOPS!!! Unknown task type at line " + lineNumber + ": " + line);
+                        continue;
+                    }
+
+                    if (task != null) {
+                        task.setDone(status == 1);
+                        tasks.add(task);
+                    }
+
+                } catch (NumberFormatException e) {
+                    System.out.println(
+                            "OOPS!!! Invalid status format at line " + lineNumber + ": " + line);
+                } catch (Exception e) {
+                    System.out.println("OOPS!!! Error parsing line " + lineNumber + ": " + line
+                            + " - " + e.getMessage());
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            System.out.println("OOPS!!! Couldn't load tasks from file: " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         Luffy luffy = new Luffy();
+        luffy.loadTasksFromFile(); // Load existing tasks from file at startup
         System.out.println(luffy.greet);
         Scanner sc = new Scanner(System.in);
         String addedTask = "HAI! TASK ADDED:";
@@ -139,6 +266,7 @@ public class Luffy {
                     String description = input.substring(4).trim();
                     Todo todo = new Todo(description);
                     luffy.tasks.add(todo);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             addedTask + "\n" + todo.toString() + "\n" + luffy.numberOfTasks());
                 }
@@ -151,6 +279,7 @@ public class Luffy {
                     String by = input.substring(byIndex + 3).trim();
                     Deadline deadline = new Deadline(description, by);
                     luffy.tasks.add(deadline);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             addedTask + "\n" + deadline.toString() + "\n" + luffy.numberOfTasks());
                 }
@@ -165,6 +294,7 @@ public class Luffy {
                     String to = input.substring(toIndex + 3).trim();
                     Event event = new Event(description, from, to);
                     luffy.tasks.add(event);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             addedTask + "\n" + event.toString() + "\n" + luffy.numberOfTasks());
                 } else if (input.startsWith("mark") || input.startsWith("Mark")
@@ -172,6 +302,7 @@ public class Luffy {
                     luffy.validateMarkUnmarkCommand(input, true);
                     int taskNumber = Integer.parseInt(input.split(" ")[1]);
                     luffy.tasks.get(taskNumber - 1).setDone(true);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             "KAIZOKU! " + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon()
                                     + " " + luffy.tasks.get(taskNumber - 1).getDescription());
@@ -180,6 +311,7 @@ public class Luffy {
                     luffy.validateMarkUnmarkCommand(input, false);
                     int taskNumber = Integer.parseInt(input.split(" ")[1]);
                     luffy.tasks.get(taskNumber - 1).setDone(false);
+                    luffy.saveTasksToFile();
                     System.out.println(
                             "NANI?" + "\n" + luffy.tasks.get(taskNumber - 1).getStatusIcon() + " "
                                     + luffy.tasks.get(taskNumber - 1).getDescription());
@@ -191,6 +323,7 @@ public class Luffy {
                     int taskNumber = Integer.parseInt(input.split(" ")[1]);
                     Task deletedTask = luffy.tasks.get(taskNumber - 1);
                     luffy.tasks.remove(taskNumber - 1);
+                    luffy.saveTasksToFile();
                     System.out.println("HAI! TASK DELETED:\n" + deletedTask.toString() + "\n"
                             + luffy.numberOfTasks());
                 } else if (!input.isEmpty()) {
