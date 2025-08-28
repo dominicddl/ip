@@ -1,12 +1,18 @@
+package luffy.command;
+
 import java.io.IOException;
+import luffy.exception.LuffyException;
+import luffy.task.TaskList;
+import luffy.ui.Ui;
+import luffy.storage.Storage;
 
 /**
- * Command to mark a task as done.
+ * Command to unmark a task (mark as not done).
  */
-public class MarkCommand extends Command {
+public class UnmarkCommand extends Command {
     private int taskNumber;
 
-    public MarkCommand(int taskNumber) {
+    public UnmarkCommand(int taskNumber) {
         this.taskNumber = taskNumber;
     }
 
@@ -17,9 +23,9 @@ public class MarkCommand extends Command {
                     + tasks.size() + " tasks!");
         }
 
-        tasks.get(taskNumber - 1).setDone(true);
+        tasks.get(taskNumber - 1).setDone(false);
         storage.save(tasks.getTasks());
-        System.out.println("KAIZOKU! " + "\n" + tasks.get(taskNumber - 1).getStatusIcon() + " "
+        System.out.println("NANI?" + "\n" + tasks.get(taskNumber - 1).getStatusIcon() + " "
                 + tasks.get(taskNumber - 1).getDescription());
     }
 }

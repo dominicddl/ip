@@ -1,4 +1,10 @@
+package luffy.command;
+
 import java.io.IOException;
+import luffy.exception.LuffyException;
+import luffy.task.TaskList;
+import luffy.ui.Ui;
+import luffy.storage.Storage;
 
 /**
  * Represents a command that can be executed.
