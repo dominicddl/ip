@@ -185,12 +185,28 @@ public class Luffy {
                     line = "T | " + status + " | " + task.getDescription();
                 } else if (task instanceof Deadline) {
                     Deadline deadline = (Deadline) task;
-                    line = "D | " + status + " | " + task.getDescription() + " | "
-                            + deadline.getBy();
+                    if (deadline.hasDateTime()) {
+                        // Save LocalDateTime in ISO format for new data
+                        line = "D | " + status + " | " + task.getDescription() + " | "
+                                + DateTimeUtil.formatDateTimeForFile(deadline.getBy());
+                    } else {
+                        // Save as string for backward compatibility
+                        line = "D | " + status + " | " + task.getDescription() + " | "
+                                + deadline.getByAsString();
+                    }
                 } else if (task instanceof Event) {
                     Event event = (Event) task;
-                    line = "E | " + status + " | " + task.getDescription() + " | "
-                            + event.getDuration();
+                    if (event.hasDateTime()) {
+                        // Save LocalDateTime in ISO format for new data (separate from and to
+                        // fields)
+                        line = "E | " + status + " | " + task.getDescription() + " | "
+                                + DateTimeUtil.formatDateTimeForFile(event.getFrom()) + " | "
+                                + DateTimeUtil.formatDateTimeForFile(event.getTo());
+                    } else {
+                        // Save as combined string for backward compatibility
+                        line = "E | " + status + " | " + task.getDescription() + " | "
+                                + event.getDuration();
+                    }
                 }
 
                 writer.write(line + System.lineSeparator());
@@ -246,23 +262,47 @@ public class Luffy {
                                     + lineNumber + ": " + line);
                             continue;
                         }
-                        String by = parts[3].trim();
-                        task = new Deadline(description, by);
+                        String byString = parts[3].trim();
+
+                        // Try to parse as ISO LocalDateTime first (new format)
+                        try {
+                            LocalDateTime by = DateTimeUtil.parseDateTimeFromFile(byString);
+                            task = new Deadline(description, by);
+                        } catch (Exception e) {
+                            // If ISO parsing fails, treat as old string format
+                            task = new Deadline(description, byString);
+                        }
                     } else if (taskType.equals("E")) {
-                        if (parts.length != 4) {
+                        if (parts.length == 5) {
+                            // New format: E | status | description | from_iso | to_iso
+                            String fromString = parts[3].trim();
+                            String toString = parts[4].trim();
+
+                            try {
+                                LocalDateTime from = DateTimeUtil.parseDateTimeFromFile(fromString);
+                                LocalDateTime to = DateTimeUtil.parseDateTimeFromFile(toString);
+                                task = new Event(description, from, to);
+                            } catch (Exception e) {
+                                System.out.println("OOPS!!! Invalid date format in Event at line "
+                                        + lineNumber + ": " + line);
+                                continue;
+                            }
+                        } else if (parts.length == 4) {
+                            // Old format: E | status | description | duration
+                            String duration = parts[3].trim();
+                            // Parse duration back to from and to
+                            String[] durationParts = duration.split(" to ");
+                            if (durationParts.length != 2) {
+                                System.out.println("OOPS!!! Corrupted Event duration at line "
+                                        + lineNumber + ": " + line);
+                                continue;
+                            }
+                            task = new Event(description, durationParts[0], durationParts[1]);
+                        } else {
                             System.out.println("OOPS!!! Corrupted Event data at line " + lineNumber
                                     + ": " + line);
                             continue;
                         }
-                        String duration = parts[3].trim();
-                        // Parse duration back to from and to
-                        String[] durationParts = duration.split(" to ");
-                        if (durationParts.length != 2) {
-                            System.out.println("OOPS!!! Corrupted Event duration at line "
-                                    + lineNumber + ": " + line);
-                            continue;
-                        }
-                        task = new Event(description, durationParts[0], durationParts[1]);
                     } else {
                         System.out.println(
                                 "OOPS!!! Unknown task type at line " + lineNumber + ": " + line);
