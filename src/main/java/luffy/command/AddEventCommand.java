@@ -1,5 +1,13 @@
+package luffy.command;
+
 import java.io.IOException;
 import java.time.LocalDateTime;
+import luffy.exception.LuffyException;
+import luffy.task.TaskList;
+import luffy.task.Event;
+import luffy.ui.Ui;
+import luffy.storage.Storage;
+import luffy.parser.Parser;
 
 /**
  * Command to add an event task.

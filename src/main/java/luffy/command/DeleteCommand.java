@@ -1,4 +1,11 @@
+package luffy.command;
+
 import java.io.IOException;
+import luffy.exception.LuffyException;
+import luffy.task.TaskList;
+import luffy.task.Task;
+import luffy.ui.Ui;
+import luffy.storage.Storage;
 
 /**
  * Command to delete a task.
