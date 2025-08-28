@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 /**
  * Contains the task list and provides operations to add/delete tasks in the list.
@@ -54,5 +56,47 @@ public class TaskList {
      */
     public String getTaskCountMessage() {
         return "Now you have " + tasks.size() + " tasks in the list.";
+    }
+
+    /**
+     * Finds all deadlines and events occurring on a specific date.
+     */
+    public ArrayList<Task> getTasksOnDate(LocalDateTime targetDate) {
+        // Get just the date part (ignore time for comparison)
+        LocalDate targetDateOnly = targetDate.toLocalDate();
+
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+
+        for (Task task : tasks) {
+            boolean matches = false;
+
+            if (task instanceof Deadline) {
+                Deadline deadline = (Deadline) task;
+                if (deadline.hasDateTime()) {
+                    LocalDate deadlineDate = deadline.getBy().toLocalDate();
+                    if (deadlineDate.equals(targetDateOnly)) {
+                        matches = true;
+                    }
+                }
+            } else if (task instanceof Event) {
+                Event event = (Event) task;
+                if (event.hasDateTime()) {
+                    LocalDate eventStartDate = event.getFrom().toLocalDate();
+                    LocalDate eventEndDate = event.getTo().toLocalDate();
+
+                    // Event matches if target date falls within the event's date range
+                    if (!targetDateOnly.isBefore(eventStartDate)
+                            && !targetDateOnly.isAfter(eventEndDate)) {
+                        matches = true;
+                    }
+                }
+            }
+
+            if (matches) {
+                matchingTasks.add(task);
+            }
+        }
+
+        return matchingTasks;
     }
 }

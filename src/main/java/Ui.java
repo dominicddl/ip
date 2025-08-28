@@ -1,4 +1,6 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.time.LocalDateTime;
 
 /**
  * Handles interactions with the user.
@@ -38,6 +40,28 @@ public class Ui {
      */
     public boolean hasNextLine() {
         return scanner.hasNextLine();
+    }
+
+    /**
+     * Shows loading error message.
+     */
+    public void showLoadingError() {
+        System.out.println("OOPS!!! Couldn't load tasks from file. Starting with empty task list.");
+    }
+
+    /**
+     * Shows tasks occurring on a specific date.
+     */
+    public void showTasksOnDate(ArrayList<Task> matchingTasks, LocalDateTime targetDate) {
+        String formattedDate = DateTimeUtil.formatDateTime(targetDate);
+        if (matchingTasks.isEmpty()) {
+            System.out.println("No deadlines or events found on " + formattedDate + "!");
+        } else {
+            System.out.println("Here are your tasks on " + formattedDate + ":");
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println((i + 1) + ". " + matchingTasks.get(i).toString());
+            }
+        }
     }
 
     /**
