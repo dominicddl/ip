@@ -160,10 +160,43 @@ public class Luffy {
             }
         }
 
-        // If no formatter worked, throw exception
-        throw new LuffyException("Invalid date/time format: '" + dateTimeStr
-                + "'. Use formats like: 2019-12-02, 2019-12-02 1800, 2019-12-02 18:00, 2019-12-02 6:00 PM, "
+        // If no formatter worked, provide helpful error message with suggestions
+        String suggestion = getDateFormatSuggestion(dateTimeStr);
+        throw new LuffyException("Invalid date/time format: '" + dateTimeStr + "'. " + suggestion
+                + " Valid formats: 2019-12-02, 2019-12-02 1800, 2019-12-02 18:00, 2019-12-02 6:00 PM, "
                 + "2/12/2019, 2/12/2019 1800, 2/12/2019 18:00, or 2/12/2019 6:00 PM");
+    }
+
+    /**
+     * Validates that the event start time is before end time.
+     */
+    private void validateEventTimes(LocalDateTime from, LocalDateTime to, String originalFromStr,
+            String originalToStr) throws LuffyException {
+        if (from.isAfter(to)) {
+            throw new LuffyException("Event start time '" + originalFromStr
+                    + "' cannot be after end time '" + originalToStr + "'!");
+        }
+        if (from.equals(to)) {
+            throw new LuffyException("Event start time and end time cannot be the same! '"
+                    + originalFromStr + "' = '" + originalToStr + "'");
+        }
+    }
+
+    /**
+     * Provides helpful suggestions for common date format mistakes.
+     */
+    private String getDateFormatSuggestion(String invalidDate) {
+        if (invalidDate.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+            return "Did you mean to use '/' instead of '-'? Try: " + invalidDate.replace("-", "/");
+        }
+        if (invalidDate.matches("\\d{4}/\\d{1,2}/\\d{1,2}")) {
+            return "For yyyy/mm/dd format, use '-' instead: " + invalidDate.replace("/", "-");
+        }
+        if (invalidDate.matches("\\d{1,2}/\\d{1,2}/\\d{2}")) {
+            return "Use 4-digit year: " + invalidDate.substring(0, invalidDate.length() - 2) + "20"
+                    + invalidDate.substring(invalidDate.length() - 2);
+        }
+        return "Check the date format and try again.";
     }
 
 
