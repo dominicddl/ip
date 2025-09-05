@@ -23,8 +23,11 @@ public class Main extends Application {
             AnchorPane ap = fxmlLoader.load();
             Scene scene = new Scene(ap);
             stage.setScene(scene);
-            stage.setTitle("Luffy");
-            fxmlLoader.<MainWindow>getController().setLuffy(luffy);  // inject the Luffy instance
+            stage.setTitle("Luffy - Task Manager");
+            stage.setMinHeight(400);
+            stage.setMinWidth(450);
+            stage.setResizable(true);
+            fxmlLoader.<MainWindow>getController().setLuffy(luffy); // inject the Luffy instance
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
