@@ -5,6 +5,7 @@ import java.io.IOException;
 import luffy.task.TaskList;
 import luffy.storage.Storage;
 import luffy.ui.Ui;
+import luffy.ui.GuiUi;
 import luffy.parser.Parser;
 import luffy.command.Command;
 import luffy.exception.LuffyException;
@@ -60,6 +61,27 @@ public class Luffy {
             } finally {
                 ui.showLine();
             }
+        }
+    }
+
+    /**
+     * Generates a response for the user's chat message. This method is used by the GUI
+     * to process commands and return appropriate responses.
+     *
+     * @param input the user's input command
+     * @return the response string to display in the GUI
+     */
+    public String getResponse(String input) {
+        try {
+            Command c = Parser.parse(input);
+            // Create a GUI-friendly UI that captures output instead of printing to console
+            GuiUi guiUi = new GuiUi();
+            c.execute(tasks, guiUi, storage);
+            return guiUi.getResponse();
+        } catch (LuffyException e) {
+            return e.getMessage();
+        } catch (IOException e) {
+            return "OOPS!!! Something went wrong with file operations: " + e.getMessage();
         }
     }
 

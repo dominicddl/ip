@@ -4,6 +4,7 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 import luffy.task.Task;
+import luffy.task.TaskList;
 import luffy.util.DateTimeUtil;
 
 /**
@@ -96,6 +97,65 @@ public class Ui {
                 System.out.println((i + 1) + ". " + matchingTasks.get(i).toString());
             }
         }
+    }
+
+    /**
+     * Displays a task addition confirmation message.
+     *
+     * @param taskString the string representation of the added task
+     * @param taskCountMessage the message showing current task count
+     */
+    public void showTaskAdded(String taskString, String taskCountMessage) {
+        System.out.println("HAI! TASK ADDED:\n" + taskString + "\n" + taskCountMessage);
+    }
+
+    /**
+     * Displays the task list.
+     *
+     * @param tasks the task list to display
+     */
+    public void showTaskList(TaskList tasks) {
+        System.out.println("Here are the tasks in your list:");
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println((i + 1) + ". " + tasks.get(i).toString());
+        }
+    }
+
+    /**
+     * Displays a task deletion confirmation message.
+     *
+     * @param taskString the string representation of the deleted task
+     * @param taskCountMessage the message showing current task count
+     */
+    public void showTaskDeleted(String taskString, String taskCountMessage) {
+        System.out.println("HAI! TASK DELETED:\n" + taskString + "\n" + taskCountMessage);
+    }
+
+    /**
+     * Displays a task marking confirmation message.
+     *
+     * @param taskString the string representation of the marked task
+     */
+    public void showTaskMarked(String taskString) {
+        System.out.println("KAIZOKU!\n" + taskString);
+    }
+
+    /**
+     * Displays a task unmarking confirmation message.
+     *
+     * @param taskString the string representation of the unmarked task
+     */
+    public void showTaskUnmarked(String taskString) {
+        System.out.println("NANI?\n" + taskString);
+    }
+
+    /**
+     * Displays a general message to the user.
+     *
+     * @param message the message to display
+     */
+    public void showMessage(String message) {
+        System.out.println(message);
     }
 
     /**

@@ -25,7 +25,6 @@ public class UnmarkCommand extends Command {
 
         tasks.get(taskNumber - 1).setDone(false);
         storage.save(tasks.getTasks());
-        System.out.println("NANI?" + "\n" + tasks.get(taskNumber - 1).getStatusIcon() + " "
-                + tasks.get(taskNumber - 1).getDescription());
+        ui.showTaskUnmarked(tasks.get(taskNumber - 1).toString());
     }
 }

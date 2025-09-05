@@ -1,5 +1,6 @@
 package luffy;
 
+import java.io.File;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -25,6 +26,7 @@ public class Main extends Application {
 
     private Image userImage = new Image(this.getClass().getResourceAsStream("/images/User.png"));
     private Image luffyImage = new Image(this.getClass().getResourceAsStream("/images/Luffy.png"));
+    private Luffy luffy = new Luffy("data" + File.separator + "Luffy.txt");
 
     /**
      * Starts the JavaFX application by setting up the primary stage with the basic chat interface
@@ -110,9 +112,12 @@ public class Main extends Application {
     }
 
     /**
-     * Generates a response to user input.
+     * Generates a response to user input using the Luffy command processing system.
+     *
+     * @param input the user's input command
+     * @return the response from the Luffy command system
      */
     private String getResponse(String input) {
-        return "Luffy heard: " + input;
+        return luffy.getResponse(input);
     }
 }

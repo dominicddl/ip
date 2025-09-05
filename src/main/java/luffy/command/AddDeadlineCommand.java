@@ -35,7 +35,6 @@ public class AddDeadlineCommand extends Command {
 
         tasks.add(deadline);
         storage.save(tasks.getTasks());
-        System.out.println(
-                "HAI! TASK ADDED:\n" + deadline.toString() + "\n" + tasks.getTaskCountMessage());
+        ui.showTaskAdded(deadline.toString(), tasks.getTaskCountMessage());
     }
 }
