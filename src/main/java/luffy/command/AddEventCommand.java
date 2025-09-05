@@ -42,7 +42,6 @@ public class AddEventCommand extends Command {
 
         tasks.add(event);
         storage.save(tasks.getTasks());
-        System.out.println(
-                "HAI! TASK ADDED:\n" + event.toString() + "\n" + tasks.getTaskCountMessage());
+        ui.showTaskAdded(event.toString(), tasks.getTaskCountMessage());
     }
 }

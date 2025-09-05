@@ -25,7 +25,6 @@ public class MarkCommand extends Command {
 
         tasks.get(taskNumber - 1).setDone(true);
         storage.save(tasks.getTasks());
-        System.out.println("KAIZOKU! " + "\n" + tasks.get(taskNumber - 1).getStatusIcon() + " "
-                + tasks.get(taskNumber - 1).getDescription());
+        ui.showTaskMarked(tasks.get(taskNumber - 1).toString());
     }
 }
