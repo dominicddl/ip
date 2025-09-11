@@ -114,14 +114,15 @@ public class Event extends Task {
     }
 
     /**
-     * Returns a string representation of this event task. The format is "[E][status] description
-     * (from: start_time to: end_time)".
+     * Returns a string representation of this event task. The format is "[E][status][priority]
+     * description (from: start_time to: end_time)".
      *
      * @return the string representation of this event task
      */
     @Override
     public String toString() {
-        return "[E]" + super.getStatusIcon() + " " + super.getDescription() + " (from: "
-                + getFromAsString() + " to: " + getToAsString() + ")";
+        return "[E]" + super.getStatusIcon() + super.getPriorityIcon() + " "
+                + super.getDescription() + " (from: " + getFromAsString() + " to: "
+                + getToAsString() + ")";
     }
 }

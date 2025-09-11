@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import luffy.exception.LuffyException;
+import luffy.task.Priority;
 import luffy.command.*;
 
 /**
@@ -48,9 +49,13 @@ public class Parser {
      * @throws LuffyException if the date/time string cannot be parsed
      */
     public static LocalDateTime parseDateTime(String dateTimeStr) throws LuffyException {
-        assert dateTimeStr != null : "Date/time string cannot be null";
+        if (dateTimeStr == null) {
+            throw new LuffyException("Date/time string cannot be null");
+        }
         dateTimeStr = dateTimeStr.trim();
-        assert !dateTimeStr.isEmpty() : "Date/time string cannot be empty";
+        if (dateTimeStr.isEmpty()) {
+            throw new LuffyException("Date/time string cannot be empty");
+        }
 
         // Define possible formatters
         DateTimeFormatter[] formatters = {
@@ -384,10 +389,30 @@ public class Parser {
             return new FindCommand(keywords);
         }
 
+        // If input starts with "priority", return PriorityCommand
+        if (input.startsWith("priority") || input.startsWith("Priority")
+                || input.startsWith("PRIORITY")) {
+            String[] parts = input.split(" ");
+            if (parts.length < 3) {
+                throw new LuffyException("Priority command needs a task number and priority level! "
+                        + "Usage: priority <task_number> <HIGH/NORMAL/LOW or H/N/L or 1/2/3>");
+            }
+
+            try {
+                int taskNumber = Integer.parseInt(parts[1]);
+                Priority priority = Priority.fromString(parts[2]);
+                return new PriorityCommand(taskNumber, priority);
+            } catch (NumberFormatException e) {
+                throw new LuffyException("'" + parts[1] + "' is not a valid task number!");
+            } catch (IllegalArgumentException e) {
+                throw new LuffyException(e.getMessage());
+            }
+        }
+
         // If we get here, it's an unknown command
         if (!input.isEmpty()) {
             throw new LuffyException("I don't understand '" + input
-                    + "'! Try: todo, deadline, event, mark, unmark, delete, list, due, find, or bye!");
+                    + "'! Try: todo, deadline, event, mark, unmark, delete, list, due, find, priority, or bye!");
         }
 
         // Empty input - just return null or handle as needed

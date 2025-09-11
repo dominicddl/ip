@@ -109,7 +109,7 @@ public class StorageTest {
         assertEquals(1, loadedTasks.size());
         assertTrue(loadedTasks.get(0) instanceof Deadline);
         assertEquals("return book", loadedTasks.get(0).getDescription());
-        
+
         Deadline loadedDeadline = (Deadline) loadedTasks.get(0);
         assertTrue(loadedDeadline.hasDateTime());
         assertEquals(deadline, loadedDeadline.getBy());
@@ -127,7 +127,7 @@ public class StorageTest {
         ArrayList<Task> loadedTasks = loadStorage.load();
         assertEquals(1, loadedTasks.size());
         assertTrue(loadedTasks.get(0) instanceof Deadline);
-        
+
         Deadline loadedDeadline = (Deadline) loadedTasks.get(0);
         assertFalse(loadedDeadline.hasDateTime());
         assertEquals("Monday", loadedDeadline.getByAsString());
@@ -147,7 +147,7 @@ public class StorageTest {
         ArrayList<Task> loadedTasks = loadStorage.load();
         assertEquals(1, loadedTasks.size());
         assertTrue(loadedTasks.get(0) instanceof Event);
-        
+
         Event loadedEvent = (Event) loadedTasks.get(0);
         assertTrue(loadedEvent.hasDateTime());
         assertEquals(from, loadedEvent.getFrom());
@@ -166,7 +166,7 @@ public class StorageTest {
         ArrayList<Task> loadedTasks = loadStorage.load();
         assertEquals(1, loadedTasks.size());
         assertTrue(loadedTasks.get(0) instanceof Event);
-        
+
         Event loadedEvent = (Event) loadedTasks.get(0);
         assertFalse(loadedEvent.hasDateTime());
         assertEquals("Monday 10am to Monday 12pm", loadedEvent.getDuration());
@@ -201,7 +201,7 @@ public class StorageTest {
     public void load_emptyFile_returnsEmptyList() throws IOException {
         // Create empty file
         testFile.createNewFile();
-        
+
         ArrayList<Task> tasks = storage.load();
         assertTrue(tasks.isEmpty());
     }
@@ -210,7 +210,7 @@ public class StorageTest {
     public void load_validTodoLine_loadsTodoCorrectly() throws IOException {
         // Create test file with todo
         FileWriter writer = new FileWriter(testFile);
-        writer.write("T | 0 | read book\n");
+        writer.write("T | 0 | NORMAL | read book\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
@@ -223,7 +223,7 @@ public class StorageTest {
     @Test
     public void load_validCompletedTodoLine_loadsTodoCorrectly() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("T | 1 | read book\n");
+        writer.write("T | 1 | NORMAL | read book\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
@@ -234,13 +234,13 @@ public class StorageTest {
     @Test
     public void load_validDeadlineWithDateTime_loadsDeadlineCorrectly() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("D | 0 | return book | 2024-12-15T14:30:00\n");
+        writer.write("D | 0 | NORMAL | return book | 2024-12-15T14:30:00\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
         assertEquals(1, tasks.size());
         assertTrue(tasks.get(0) instanceof Deadline);
-        
+
         Deadline deadline = (Deadline) tasks.get(0);
         assertTrue(deadline.hasDateTime());
         assertEquals(LocalDateTime.of(2024, 12, 15, 14, 30), deadline.getBy());
@@ -249,13 +249,13 @@ public class StorageTest {
     @Test
     public void load_validDeadlineWithString_loadsDeadlineCorrectly() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("D | 0 | return book | Monday\n");
+        writer.write("D | 0 | NORMAL | return book | Monday\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
         assertEquals(1, tasks.size());
         assertTrue(tasks.get(0) instanceof Deadline);
-        
+
         Deadline deadline = (Deadline) tasks.get(0);
         assertFalse(deadline.hasDateTime());
         assertEquals("Monday", deadline.getByAsString());
@@ -264,13 +264,13 @@ public class StorageTest {
     @Test
     public void load_validEventWithDateTime_loadsEventCorrectly() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("E | 0 | meeting | 2024-12-15T10:00:00 | 2024-12-15T12:00:00\n");
+        writer.write("E | 0 | NORMAL | meeting | 2024-12-15T10:00:00 | 2024-12-15T12:00:00\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
         assertEquals(1, tasks.size());
         assertTrue(tasks.get(0) instanceof Event);
-        
+
         Event event = (Event) tasks.get(0);
         assertTrue(event.hasDateTime());
         assertEquals(LocalDateTime.of(2024, 12, 15, 10, 0), event.getFrom());
@@ -280,13 +280,13 @@ public class StorageTest {
     @Test
     public void load_validEventWithString_loadsEventCorrectly() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("E | 0 | meeting | Monday 10am to Monday 12pm\n");
+        writer.write("E | 0 | NORMAL | meeting | Monday 10am to Monday 12pm\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
         assertEquals(1, tasks.size());
         assertTrue(tasks.get(0) instanceof Event);
-        
+
         Event event = (Event) tasks.get(0);
         assertFalse(event.hasDateTime());
         assertEquals("Monday 10am to Monday 12pm", event.getDuration());
@@ -295,9 +295,9 @@ public class StorageTest {
     @Test
     public void load_corruptedLine_skipsCorruptedData() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("T | 0 | valid todo\n");
+        writer.write("T | 0 | NORMAL | valid todo\n");
         writer.write("CORRUPTED LINE\n");
-        writer.write("D | 0 | valid deadline | Monday\n");
+        writer.write("D | 0 | NORMAL | valid deadline | Monday\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
@@ -309,10 +309,10 @@ public class StorageTest {
     @Test
     public void load_emptyLines_skipsEmptyLines() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("T | 0 | todo task\n");
+        writer.write("T | 0 | NORMAL | todo task\n");
         writer.write("\n");
         writer.write("   \n");
-        writer.write("D | 0 | deadline task | Monday\n");
+        writer.write("D | 0 | NORMAL | deadline task | Monday\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
@@ -322,9 +322,9 @@ public class StorageTest {
     @Test
     public void load_invalidTaskType_skipsInvalidTask() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("T | 0 | valid todo\n");
-        writer.write("X | 0 | invalid task type | data\n");
-        writer.write("D | 0 | valid deadline | Monday\n");
+        writer.write("T | 0 | NORMAL | valid todo\n");
+        writer.write("X | 0 | NORMAL | invalid task type | data\n");
+        writer.write("D | 0 | NORMAL | valid deadline | Monday\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
@@ -334,9 +334,9 @@ public class StorageTest {
     @Test
     public void load_invalidStatus_skipsInvalidTask() throws IOException {
         FileWriter writer = new FileWriter(testFile);
-        writer.write("T | 0 | valid todo\n");
-        writer.write("T | abc | invalid status | \n");
-        writer.write("D | 0 | valid deadline | Monday\n");
+        writer.write("T | 0 | NORMAL | valid todo\n");
+        writer.write("T | abc | NORMAL | invalid status | \n");
+        writer.write("D | 0 | NORMAL | valid deadline | Monday\n");
         writer.close();
 
         ArrayList<Task> tasks = storage.load();
@@ -347,16 +347,15 @@ public class StorageTest {
     @Test
     public void roundTrip_mixedTasks_maintainsAllData() throws IOException {
         ArrayList<Task> originalTasks = new ArrayList<>();
-        
+
         Todo todo = new Todo("todo task");
         todo.setDone(true);
         originalTasks.add(todo);
-        
+
         Deadline deadline = new Deadline("deadline task", LocalDateTime.of(2024, 12, 15, 14, 30));
         originalTasks.add(deadline);
-        
-        Event event = new Event("event task", 
-                LocalDateTime.of(2024, 12, 15, 10, 0),
+
+        Event event = new Event("event task", LocalDateTime.of(2024, 12, 15, 10, 0),
                 LocalDateTime.of(2024, 12, 15, 12, 0));
         originalTasks.add(event);
 
@@ -365,18 +364,18 @@ public class StorageTest {
         ArrayList<Task> loadedTasks = storage.load();
 
         assertEquals(originalTasks.size(), loadedTasks.size());
-        
+
         // Check todo
         assertTrue(loadedTasks.get(0) instanceof Todo);
         assertEquals("todo task", loadedTasks.get(0).getDescription());
         assertTrue(loadedTasks.get(0).isDone());
-        
+
         // Check deadline
         assertTrue(loadedTasks.get(1) instanceof Deadline);
         Deadline loadedDeadline = (Deadline) loadedTasks.get(1);
         assertTrue(loadedDeadline.hasDateTime());
         assertEquals(LocalDateTime.of(2024, 12, 15, 14, 30), loadedDeadline.getBy());
-        
+
         // Check event
         assertTrue(loadedTasks.get(2) instanceof Event);
         Event loadedEvent = (Event) loadedTasks.get(2);

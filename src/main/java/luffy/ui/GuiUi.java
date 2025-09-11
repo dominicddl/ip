@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.time.LocalDateTime;
 import luffy.task.Task;
 import luffy.task.TaskList;
+import luffy.task.Priority;
 import luffy.util.DateTimeUtil;
 
 /**
- * GUI-friendly UI implementation that captures output instead of printing to console.
- * This class is used by the JavaFX GUI to get response strings from command execution.
+ * GUI-friendly UI implementation that captures output instead of printing to console. This class is
+ * used by the JavaFX GUI to get response strings from command execution.
  */
 public class GuiUi extends Ui {
     private StringBuilder response;
@@ -97,7 +98,8 @@ public class GuiUi extends Ui {
         } else {
             response.append("Here are your tasks on ").append(formattedDate).append(":\n");
             for (int i = 0; i < matchingTasks.size(); i++) {
-                response.append((i + 1)).append(". ").append(matchingTasks.get(i).toString()).append("\n");
+                response.append((i + 1)).append(". ").append(matchingTasks.get(i).toString())
+                        .append("\n");
             }
         }
     }
@@ -118,7 +120,8 @@ public class GuiUi extends Ui {
      */
     @Override
     public void showTaskAdded(String taskString, String taskCountMessage) {
-        response.append("HAI! TASK ADDED:\n").append(taskString).append("\n").append(taskCountMessage);
+        response.append("HAI! TASK ADDED:\n").append(taskString).append("\n")
+                .append(taskCountMessage);
     }
 
     /**
@@ -142,7 +145,8 @@ public class GuiUi extends Ui {
      */
     @Override
     public void showTaskDeleted(String taskString, String taskCountMessage) {
-        response.append("HAI! TASK DELETED:\n").append(taskString).append("\n").append(taskCountMessage);
+        response.append("HAI! TASK DELETED:\n").append(taskString).append("\n")
+                .append(taskCountMessage);
     }
 
     /**
@@ -173,6 +177,13 @@ public class GuiUi extends Ui {
     @Override
     public void showMessage(String message) {
         response.append(message);
+    }
+
+    @Override
+    public void showPriorityChanged(String taskString, Priority oldPriority, Priority newPriority) {
+        response.append("YOSH! I've changed the priority of this task from ")
+                .append(oldPriority.getDisplayName()).append(" to ")
+                .append(newPriority.getDisplayName()).append(":\n").append(taskString);
     }
 
     /**

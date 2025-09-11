@@ -11,6 +11,7 @@ import luffy.task.Task;
 import luffy.task.Todo;
 import luffy.task.Deadline;
 import luffy.task.Event;
+import luffy.task.Priority;
 import luffy.util.DateTimeUtil;
 
 /**
@@ -28,9 +29,9 @@ public class Storage {
     private static final String DATA_DIRECTORY = "data";
     private static final int DONE_STATUS = 1;
     private static final int NOT_DONE_STATUS = 0;
-    private static final int MIN_PARTS_COUNT = 3;
-    private static final int TODO_PARTS_COUNT = 3;
-    private static final int DEADLINE_PARTS_COUNT = 4;
+    private static final int MIN_PARTS_COUNT = 4;
+    private static final int TODO_PARTS_COUNT = 4;
+    private static final int DEADLINE_PARTS_COUNT = 5;
 
     private String filePath;
 
@@ -86,33 +87,37 @@ public class Storage {
      */
     private String formatTaskForFile(Task task) {
         int status = task.isDone() ? DONE_STATUS : NOT_DONE_STATUS;
+        String priority = task.getPriority().name();
 
         if (task instanceof Todo) {
-            return TODO_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR + task.getDescription();
+            return TODO_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR + priority
+                    + TASK_SEPARATOR + task.getDescription();
         } else if (task instanceof Deadline) {
             Deadline deadline = (Deadline) task;
             if (deadline.hasDateTime()) {
                 // Save LocalDateTime in ISO format for new data
-                return DEADLINE_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR
-                        + task.getDescription() + TASK_SEPARATOR
+                return DEADLINE_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR + priority
+                        + TASK_SEPARATOR + task.getDescription() + TASK_SEPARATOR
                         + DateTimeUtil.formatDateTimeForFile(deadline.getBy());
             } else {
                 // Save as string for backward compatibility
-                return DEADLINE_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR
-                        + task.getDescription() + TASK_SEPARATOR + deadline.getByAsString();
+                return DEADLINE_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR + priority
+                        + TASK_SEPARATOR + task.getDescription() + TASK_SEPARATOR
+                        + deadline.getByAsString();
             }
         } else if (task instanceof Event) {
             Event event = (Event) task;
             if (event.hasDateTime()) {
                 // Save LocalDateTime in ISO format for new data (separate from and to fields)
-                return EVENT_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR
-                        + task.getDescription() + TASK_SEPARATOR
+                return EVENT_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR + priority
+                        + TASK_SEPARATOR + task.getDescription() + TASK_SEPARATOR
                         + DateTimeUtil.formatDateTimeForFile(event.getFrom()) + TASK_SEPARATOR
                         + DateTimeUtil.formatDateTimeForFile(event.getTo());
             } else {
                 // Save as combined string for backward compatibility
-                return EVENT_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR
-                        + task.getDescription() + TASK_SEPARATOR + event.getDuration();
+                return EVENT_MARKER + TASK_SEPARATOR + status + TASK_SEPARATOR + priority
+                        + TASK_SEPARATOR + task.getDescription() + TASK_SEPARATOR
+                        + event.getDuration();
             }
         }
         return "";
@@ -155,24 +160,45 @@ public class Storage {
 
                     String taskType = parts[0].trim();
                     int status = Integer.parseInt(parts[1].trim());
-                    String description = parts[2].trim();
+
+                    // Handle both old format (without priority) and new format (with priority)
+                    Priority priority = Priority.NORMAL; // Default for old format
+                    String description;
+                    int descriptionIndex = 2;
+
+                    // Check if this is new format with priority
+                    if (parts.length >= MIN_PARTS_COUNT) {
+                        try {
+                            priority = Priority.valueOf(parts[2].trim());
+                            description = parts[3].trim();
+                            descriptionIndex = 3;
+                        } catch (IllegalArgumentException e) {
+                            // Old format without priority, parts[2] is description
+                            description = parts[2].trim();
+                            descriptionIndex = 2;
+                        }
+                    } else {
+                        description = parts[2].trim();
+                    }
 
                     Task task = null;
 
                     if (taskType.equals(TODO_MARKER)) {
-                        if (parts.length != TODO_PARTS_COUNT) {
+                        // Handle both old (3 parts) and new (4 parts) format
+                        if (parts.length != TODO_PARTS_COUNT && parts.length != 3) {
                             System.out.println("OOPS!!! Corrupted Todo data at line " + lineNumber
                                     + ": " + line);
                             continue;
                         }
                         task = new Todo(description);
                     } else if (taskType.equals(DEADLINE_MARKER)) {
-                        if (parts.length != DEADLINE_PARTS_COUNT) {
+                        // Handle both old (4 parts) and new (5 parts) format
+                        if (parts.length != DEADLINE_PARTS_COUNT && parts.length != 4) {
                             System.out.println("OOPS!!! Corrupted Deadline data at line "
                                     + lineNumber + ": " + line);
                             continue;
                         }
-                        String byString = parts[3].trim();
+                        String byString = parts[descriptionIndex + 1].trim();
 
                         // Try to parse as ISO LocalDateTime first (new format)
                         try {
@@ -183,10 +209,11 @@ public class Storage {
                             task = new Deadline(description, byString);
                         }
                     } else if (taskType.equals(EVENT_MARKER)) {
-                        if (parts.length == 5) {
-                            // New format: E | status | description | from_iso | to_iso
-                            String fromString = parts[3].trim();
-                            String toString = parts[4].trim();
+                        if (parts.length == 6) {
+                            // New format with priority: E | status | priority | description |
+                            // from_iso | to_iso
+                            String fromString = parts[descriptionIndex + 1].trim();
+                            String toString = parts[descriptionIndex + 2].trim();
 
                             try {
                                 LocalDateTime from = DateTimeUtil.parseDateTimeFromFile(fromString);
@@ -197,10 +224,21 @@ public class Storage {
                                         + lineNumber + ": " + line);
                                 continue;
                             }
-                        } else if (parts.length == 4) {
-                            // Old format: E | status | description | duration
-                            String duration = parts[3].trim();
+                        } else if (parts.length == 5) {
+                            // Old format with priority: E | status | priority | description |
+                            // duration
+                            String duration = parts[descriptionIndex + 1].trim();
                             // Parse duration back to from and to
+                            String[] durationParts = duration.split(" to ");
+                            if (durationParts.length != 2) {
+                                System.out.println("OOPS!!! Corrupted Event duration at line "
+                                        + lineNumber + ": " + line);
+                                continue;
+                            }
+                            task = new Event(description, durationParts[0], durationParts[1]);
+                        } else if (parts.length == 4) {
+                            // Very old format without priority: E | status | description | duration
+                            String duration = parts[3].trim();
                             String[] durationParts = duration.split(" to ");
                             if (durationParts.length != 2) {
                                 System.out.println("OOPS!!! Corrupted Event duration at line "
@@ -221,6 +259,7 @@ public class Storage {
 
                     if (task != null) {
                         task.setDone(status == DONE_STATUS);
+                        task.setPriority(priority);
                         tasks.add(task);
                     }
 
