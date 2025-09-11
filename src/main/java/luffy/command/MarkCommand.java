@@ -13,7 +13,6 @@ public class MarkCommand extends Command {
     private int taskNumber;
 
     public MarkCommand(int taskNumber) {
-        assert taskNumber > 0 : "Task number must be positive: " + taskNumber;
         this.taskNumber = taskNumber;
     }
 

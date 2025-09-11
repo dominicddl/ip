@@ -86,8 +86,8 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] read book"));
-        assertTrue(output.contains("2.[T][ ] return book"));
+        assertTrue(output.contains("1.[T][ ][N] read book"));
+        assertTrue(output.contains("2.[T][ ][N] return book"));
         assertFalse(output.contains("buy groceries"));
     }
 
@@ -127,8 +127,8 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] read programming book"));
-        assertTrue(output.contains("2.[T][ ] read history book"));
+        assertTrue(output.contains("1.[T][ ][N] read programming book"));
+        assertTrue(output.contains("2.[T][ ][N] read history book"));
         assertFalse(output.contains("programming tutorial"));
     }
 
@@ -157,7 +157,7 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] Read BOOK"));
+        assertTrue(output.contains("1.[T][ ][N] Read BOOK"));
         assertFalse(output.contains("BUY groceries"));
     }
 
@@ -171,7 +171,7 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] read book"));
+        assertTrue(output.contains("1.[T][ ][N] read book"));
     }
 
     // Tests for substring matching
@@ -187,8 +187,8 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] notebook"));
-        assertTrue(output.contains("2.[T][ ] textbook"));
+        assertTrue(output.contains("1.[T][ ][N] notebook"));
+        assertTrue(output.contains("2.[T][ ][N] textbook"));
         assertFalse(output.contains("car"));
     }
 
@@ -206,9 +206,9 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] read book"));
-        assertTrue(output.contains("2.[D][ ] return book"));
-        assertTrue(output.contains("3.[E][ ] book club meeting"));
+        assertTrue(output.contains("1.[T][ ][N] read book"));
+        assertTrue(output.contains("2.[D][ ][N] return book"));
+        assertTrue(output.contains("3.[E][ ][N] book club meeting"));
         assertFalse(output.contains("buy groceries"));
     }
 
@@ -225,8 +225,8 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][X] read book"));
-        assertTrue(output.contains("2.[T][ ] return book"));
+        assertTrue(output.contains("1.[T][X][N] read book"));
+        assertTrue(output.contains("2.[T][ ][N] return book"));
     }
 
     // Tests for sequential numbering
@@ -243,9 +243,9 @@ public class FindCommandTest {
         command.execute(mockTasks, mockUi, mockStorage);
 
         String output = outputStream.toString();
-        assertTrue(output.contains("1.[T][ ] book 1"));
-        assertTrue(output.contains("2.[T][ ] book 2"));
-        assertTrue(output.contains("3.[T][ ] book 3"));
+        assertTrue(output.contains("1.[T][ ][N] book 1"));
+        assertTrue(output.contains("2.[T][ ][N] book 2"));
+        assertTrue(output.contains("3.[T][ ][N] book 3"));
         assertFalse(output.contains("4."));
     }
 
@@ -261,7 +261,7 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] any task"));
+        assertTrue(output.contains("1.[T][ ][N] any task"));
     }
 
     @Test
@@ -275,7 +275,7 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] read C++ book"));
+        assertTrue(output.contains("1.[T][ ][N] read C++ book"));
         assertFalse(output.contains("learn Java"));
     }
 
@@ -291,7 +291,7 @@ public class FindCommandTest {
 
         String output = outputStream.toString();
         assertTrue(output.contains("Here are the matching tasks in your list:"));
-        assertTrue(output.contains("1.[T][ ] chapter 1 reading"));
+        assertTrue(output.contains("1.[T][ ][N] chapter 1 reading"));
         assertFalse(output.contains("chapter 2 reading"));
         assertFalse(output.contains("general reading"));
     }

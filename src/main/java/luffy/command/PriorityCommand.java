@@ -23,8 +23,6 @@ public class PriorityCommand extends Command {
      * @param priority the new priority level for the task
      */
     public PriorityCommand(int taskNumber, Priority priority) {
-        assert taskNumber > 0 : "Task number must be positive: " + taskNumber;
-        assert priority != null : "Priority cannot be null";
         this.taskNumber = taskNumber;
         this.priority = priority;
     }

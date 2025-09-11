@@ -49,9 +49,13 @@ public class Parser {
      * @throws LuffyException if the date/time string cannot be parsed
      */
     public static LocalDateTime parseDateTime(String dateTimeStr) throws LuffyException {
-        assert dateTimeStr != null : "Date/time string cannot be null";
+        if (dateTimeStr == null) {
+            throw new LuffyException("Date/time string cannot be null");
+        }
         dateTimeStr = dateTimeStr.trim();
-        assert !dateTimeStr.isEmpty() : "Date/time string cannot be empty";
+        if (dateTimeStr.isEmpty()) {
+            throw new LuffyException("Date/time string cannot be empty");
+        }
 
         // Define possible formatters
         DateTimeFormatter[] formatters = {
