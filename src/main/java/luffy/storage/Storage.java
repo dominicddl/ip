@@ -40,6 +40,8 @@ public class Storage {
      * @param filePath the path to the file where tasks will be stored
      */
     public Storage(String filePath) {
+        assert filePath != null : "File path cannot be null";
+        assert !filePath.trim().isEmpty() : "File path cannot be empty";
         this.filePath = filePath;
     }
 
@@ -61,6 +63,7 @@ public class Storage {
      * @throws IOException if the file cannot be written to
      */
     public void save(ArrayList<Task> tasks) throws IOException {
+        assert tasks != null : "Task list cannot be null";
         // Create data directory if it doesn't exist
         File dataDir = new File(DATA_DIRECTORY);
         if (!dataDir.exists()) {
