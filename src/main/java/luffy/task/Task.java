@@ -1,15 +1,17 @@
 package luffy.task;
 
 /**
- * Represents a generic task with a description and completion status. This is the base class for
- * all task types in the Luffy task management system.
+ * Represents a generic task with a description, completion status, and priority level. This is the
+ * base class for all task types in the Luffy task management system.
  */
 public class Task {
     private String description;
     private boolean isDone;
+    private Priority priority;
 
     /**
-     * Creates a new task with the specified description. The task is initially marked as not done.
+     * Creates a new task with the specified description. The task is initially marked as not done
+     * and has NORMAL priority.
      *
      * @param description the description of the task
      */
@@ -18,6 +20,7 @@ public class Task {
         assert !description.trim().isEmpty() : "Task description cannot be empty";
         this.description = description;
         this.isDone = false;
+        this.priority = Priority.NORMAL;
     }
 
     /**
@@ -65,5 +68,33 @@ public class Task {
      */
     public void setDone(boolean isDone) {
         this.isDone = isDone;
+    }
+
+    /**
+     * Returns the priority of this task.
+     *
+     * @return the task priority
+     */
+    public Priority getPriority() {
+        return priority;
+    }
+
+    /**
+     * Sets the priority of this task.
+     *
+     * @param priority the new priority for the task
+     */
+    public void setPriority(Priority priority) {
+        assert priority != null : "Task priority cannot be null";
+        this.priority = priority;
+    }
+
+    /**
+     * Returns a string representation of the priority for display purposes.
+     *
+     * @return the priority indicator (e.g., "[H]", "[N]", "[L]")
+     */
+    public String getPriorityIcon() {
+        return "[" + priority.getShortForm() + "]";
     }
 }

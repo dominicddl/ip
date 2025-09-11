@@ -16,13 +16,14 @@ public class Todo extends Task {
     }
 
     /**
-     * Returns a string representation of this todo task. The format is "[T][status] description"
-     * where status is either X or space.
+     * Returns a string representation of this todo task. The format is "[T][status][priority]
+     * description" where status is either X or space and priority is H/N/L.
      *
      * @return the string representation of this todo task
      */
     @Override
     public String toString() {
-        return "[T]" + super.getStatusIcon() + " " + super.getDescription();
+        return "[T]" + super.getStatusIcon() + super.getPriorityIcon() + " "
+                + super.getDescription();
     }
 }

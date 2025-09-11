@@ -76,14 +76,14 @@ public class Deadline extends Task {
     }
 
     /**
-     * Returns a string representation of this deadline task. The format is "[D][status] description
-     * (by: due_date_time)".
+     * Returns a string representation of this deadline task. The format is "[D][status][priority]
+     * description (by: due_date_time)".
      *
      * @return the string representation of this deadline task
      */
     @Override
     public String toString() {
-        return "[D]" + super.getStatusIcon() + " " + super.getDescription() + " (by: "
-                + getByAsString() + ")";
+        return "[D]" + super.getStatusIcon() + super.getPriorityIcon() + " "
+                + super.getDescription() + " (by: " + getByAsString() + ")";
     }
 }
