@@ -28,6 +28,7 @@ public class Luffy {
      * @param filePath the path to the file where tasks will be stored
      */
     public Luffy(String filePath) {
+        assert filePath != null : "File path cannot be null";
         ui = new Ui();
         storage = new Storage(filePath);
         try {
@@ -65,13 +66,14 @@ public class Luffy {
     }
 
     /**
-     * Generates a response for the user's chat message. This method is used by the GUI
-     * to process commands and return appropriate responses.
+     * Generates a response for the user's chat message. This method is used by the GUI to process
+     * commands and return appropriate responses.
      *
      * @param input the user's input command
      * @return the response string to display in the GUI
      */
     public String getResponse(String input) {
+        assert input != null : "User input cannot be null";
         try {
             Command c = Parser.parse(input);
             // Create a GUI-friendly UI that captures output instead of printing to console
