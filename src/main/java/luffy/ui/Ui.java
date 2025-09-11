@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.time.LocalDateTime;
 import luffy.task.Task;
 import luffy.task.TaskList;
+import luffy.task.Priority;
 import luffy.util.DateTimeUtil;
 
 /**
@@ -147,6 +148,19 @@ public class Ui {
      */
     public void showTaskUnmarked(String taskString) {
         System.out.println("NANI?\n" + taskString);
+    }
+
+    /**
+     * Displays a priority change confirmation message.
+     *
+     * @param taskString the string representation of the task with new priority
+     * @param oldPriority the previous priority level
+     * @param newPriority the new priority level
+     */
+    public void showPriorityChanged(String taskString, Priority oldPriority, Priority newPriority) {
+        System.out.println("YOSH! I've changed the priority of this task from "
+                + oldPriority.getDisplayName() + " to " + newPriority.getDisplayName() + ":");
+        System.out.println(taskString);
     }
 
     /**
