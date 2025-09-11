@@ -13,11 +13,15 @@ public class MarkCommand extends Command {
     private int taskNumber;
 
     public MarkCommand(int taskNumber) {
+        assert taskNumber > 0 : "Task number must be positive: " + taskNumber;
         this.taskNumber = taskNumber;
     }
 
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws LuffyException, IOException {
+        assert tasks != null : "TaskList cannot be null";
+        assert ui != null : "UI cannot be null";
+        assert storage != null : "Storage cannot be null";
         if (taskNumber < 1 || taskNumber > tasks.size()) {
             throw new LuffyException("Task " + taskNumber + "? That doesn't exist! I only have "
                     + tasks.size() + " tasks!");

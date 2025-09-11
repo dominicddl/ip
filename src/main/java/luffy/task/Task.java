@@ -14,6 +14,8 @@ public class Task {
      * @param description the description of the task
      */
     public Task(String description) {
+        assert description != null : "Task description cannot be null";
+        assert !description.trim().isEmpty() : "Task description cannot be empty";
         this.description = description;
         this.isDone = false;
     }
@@ -33,6 +35,8 @@ public class Task {
      * @param description the new description for the task
      */
     public void setDescription(String description) {
+        assert description != null : "Task description cannot be null";
+        assert !description.trim().isEmpty() : "Task description cannot be empty";
         this.description = description;
     }
 

@@ -24,6 +24,7 @@ public class TaskList {
      * @param tasks the initial list of tasks
      */
     public TaskList(ArrayList<Task> tasks) {
+        assert tasks != null : "Task list cannot be null";
         this.tasks = tasks;
     }
 
@@ -33,6 +34,7 @@ public class TaskList {
      * @param task the task to add to the list
      */
     public void add(Task task) {
+        assert task != null : "Cannot add null task to the list";
         tasks.add(task);
     }
 
@@ -44,6 +46,7 @@ public class TaskList {
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public Task remove(int index) {
+        assert index >= 0 && index < tasks.size() : "Index must be within valid range: " + index;
         return tasks.remove(index);
     }
 
@@ -55,6 +58,7 @@ public class TaskList {
      * @throws IndexOutOfBoundsException if the index is out of range
      */
     public Task get(int index) {
+        assert index >= 0 && index < tasks.size() : "Index must be within valid range: " + index;
         return tasks.get(index);
     }
 
@@ -96,6 +100,7 @@ public class TaskList {
      * @return a list of tasks that occur on the specified date
      */
     public ArrayList<Task> getTasksOnDate(LocalDateTime targetDate) {
+        assert targetDate != null : "Target date cannot be null";
         // Get just the date part (ignore time for comparison)
         LocalDate targetDateOnly = targetDate.toLocalDate();
 
