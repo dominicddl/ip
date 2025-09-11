@@ -15,6 +15,24 @@ import luffy.command.*;
  */
 public class Parser {
 
+    // Date format patterns
+    private static final String YYYY_MM_DD_HHMM = "yyyy-MM-dd HHmm";
+    private static final String YYYY_MM_DD_HH_MM = "yyyy-MM-dd HH:mm";
+    private static final String YYYY_MM_DD_H_MM_A = "yyyy-MM-dd h:mm a";
+    private static final String YYYY_MM_DD = "yyyy-MM-dd";
+    private static final String D_M_YYYY_HHMM = "d/M/yyyy HHmm";
+    private static final String D_M_YYYY_HH_MM = "d/M/yyyy HH:mm";
+    private static final String D_M_YYYY_H_MM_A = "d/M/yyyy h:mm a";
+    private static final String D_M_YYYY = "d/M/yyyy";
+
+    // Date pattern regex
+    private static final String DATE_ONLY_DASH_PATTERN = ".*\\d{4}-\\d{2}-\\d{2}$";
+    private static final String DATE_ONLY_SLASH_PATTERN = ".*\\d{1,2}/\\d{1,2}/\\d{4}$";
+
+    // Default time for date-only inputs
+    private static final int DEFAULT_HOUR = 23;
+    private static final int DEFAULT_MINUTE = 59;
+
     /**
      * Parses a date/time string into LocalDateTime object. Supports multiple date and time formats
      * with flexible input parsing.
@@ -35,24 +53,24 @@ public class Parser {
         // Define possible formatters
         DateTimeFormatter[] formatters = {
                 // yyyy-mm-dd formats
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd h:mm a"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                DateTimeFormatter.ofPattern(YYYY_MM_DD_HHMM),
+                DateTimeFormatter.ofPattern(YYYY_MM_DD_HH_MM),
+                DateTimeFormatter.ofPattern(YYYY_MM_DD_H_MM_A),
+                DateTimeFormatter.ofPattern(YYYY_MM_DD),
                 // d/m/yyyy formats
-                DateTimeFormatter.ofPattern("d/M/yyyy HHmm"),
-                DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"),
-                DateTimeFormatter.ofPattern("d/M/yyyy h:mm a"),
-                DateTimeFormatter.ofPattern("d/M/yyyy")};
+                DateTimeFormatter.ofPattern(D_M_YYYY_HHMM),
+                DateTimeFormatter.ofPattern(D_M_YYYY_HH_MM),
+                DateTimeFormatter.ofPattern(D_M_YYYY_H_MM_A),
+                DateTimeFormatter.ofPattern(D_M_YYYY)};
 
         // Try parsing with each formatter
         for (DateTimeFormatter formatter : formatters) {
             try {
-                if (dateTimeStr.matches(".*\\d{4}-\\d{2}-\\d{2}$")
-                        || dateTimeStr.matches(".*\\d{1,2}/\\d{1,2}/\\d{4}$")) {
-                    // Date only formats - parse as LocalDate and set time to 23:59
+                if (dateTimeStr.matches(DATE_ONLY_DASH_PATTERN)
+                        || dateTimeStr.matches(DATE_ONLY_SLASH_PATTERN)) {
+                    // Date only formats - parse as LocalDate and set time to default
                     LocalDate date = LocalDate.parse(dateTimeStr, formatter);
-                    return date.atTime(23, 59);
+                    return date.atTime(DEFAULT_HOUR, DEFAULT_MINUTE);
                 } else {
                     // Date with time formats
                     return LocalDateTime.parse(dateTimeStr, formatter);
@@ -85,18 +103,24 @@ public class Parser {
     }
 
     /**
-     * Provides helpful suggestions for common date format mistakes.
+     * Provides helpful suggestions for common date format mistakes based on the invalid input.
+     *
+     * @param invalidDateString the date string that failed to parse
+     * @return a helpful suggestion message for correcting the date format
      */
-    private static String getDateFormatSuggestion(String invalidDate) {
-        if (invalidDate.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
-            return "Did you mean to use '/' instead of '-'? Try: " + invalidDate.replace("-", "/");
+    private static String getDateFormatSuggestion(String invalidDateString) {
+        // Check for common date format mistakes and provide specific suggestions
+        if (invalidDateString.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+            return "Did you mean to use '/' instead of '-'? Try: "
+                    + invalidDateString.replace("-", "/");
         }
-        if (invalidDate.matches("\\d{4}/\\d{1,2}/\\d{1,2}")) {
-            return "For yyyy/mm/dd format, use '-' instead: " + invalidDate.replace("/", "-");
+        if (invalidDateString.matches("\\d{4}/\\d{1,2}/\\d{1,2}")) {
+            return "For yyyy/mm/dd format, use '-' instead: " + invalidDateString.replace("/", "-");
         }
-        if (invalidDate.matches("\\d{1,2}/\\d{1,2}/\\d{2}")) {
-            return "Use 4-digit year: " + invalidDate.substring(0, invalidDate.length() - 2) + "20"
-                    + invalidDate.substring(invalidDate.length() - 2);
+        if (invalidDateString.matches("\\d{1,2}/\\d{1,2}/\\d{2}")) {
+            return "Use 4-digit year: "
+                    + invalidDateString.substring(0, invalidDateString.length() - 2) + "20"
+                    + invalidDateString.substring(invalidDateString.length() - 2);
         }
         return "Check the date format and try again.";
     }
