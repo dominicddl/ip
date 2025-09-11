@@ -1,16 +1,14 @@
 package luffy.command;
 
-import java.io.IOException;
-import luffy.task.TaskList;
+import luffy.exception.LuffyException;
+import luffy.task.Task;
 import luffy.task.Todo;
-import luffy.ui.Ui;
-import luffy.storage.Storage;
 
 /**
  * Command to add a todo task to the task list. Todo tasks are simple tasks with just a description
  * and completion status.
  */
-public class AddTodoCommand extends Command {
+public class AddTodoCommand extends AddTaskCommand {
     private String description;
 
     /**
@@ -22,20 +20,8 @@ public class AddTodoCommand extends Command {
         this.description = description;
     }
 
-    /**
-     * Executes the command by creating a new Todo task, adding it to the task list, saving the
-     * updated list to storage, and displaying a confirmation message.
-     *
-     * @param tasks the task list to add the todo to
-     * @param ui the user interface for displaying messages
-     * @param storage the storage handler for saving changes
-     * @throws IOException if there is an error saving to storage
-     */
     @Override
-    public void execute(TaskList tasks, Ui ui, Storage storage) throws IOException {
-        Todo todo = new Todo(description);
-        tasks.add(todo);
-        storage.save(tasks.getTasks());
-        ui.showTaskAdded(todo.toString(), tasks.getTaskCountMessage());
+    protected Task createTask() throws LuffyException {
+        return new Todo(description);
     }
 }
