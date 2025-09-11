@@ -30,7 +30,9 @@ public class Parser {
      * @throws LuffyException if the date/time string cannot be parsed
      */
     public static LocalDateTime parseDateTime(String dateTimeStr) throws LuffyException {
+        assert dateTimeStr != null : "Date/time string cannot be null";
         dateTimeStr = dateTimeStr.trim();
+        assert !dateTimeStr.isEmpty() : "Date/time string cannot be empty";
 
         // Define possible formatters
         DateTimeFormatter[] formatters = {
@@ -74,6 +76,10 @@ public class Parser {
      */
     public static void validateEventTimes(LocalDateTime from, LocalDateTime to,
             String originalFromStr, String originalToStr) throws LuffyException {
+        assert from != null : "Event start time cannot be null";
+        assert to != null : "Event end time cannot be null";
+        assert originalFromStr != null : "Original from string cannot be null";
+        assert originalToStr != null : "Original to string cannot be null";
         if (from.isAfter(to)) {
             throw new LuffyException("Event start time '" + originalFromStr
                     + "' cannot be after end time '" + originalToStr + "'!");
@@ -225,6 +231,7 @@ public class Parser {
      * @throws LuffyException if the command is unknown or has invalid format
      */
     public static Command parse(String fullCommand) throws LuffyException {
+        assert fullCommand != null : "Command string cannot be null";
         String input = fullCommand.trim();
 
         // If input is "bye", return ExitCommand
