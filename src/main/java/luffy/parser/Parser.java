@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 import luffy.exception.LuffyException;
 import luffy.task.Priority;
 import luffy.command.*;
@@ -57,30 +58,34 @@ public class Parser {
             throw new LuffyException("Date/time string cannot be empty");
         }
 
-        // Define possible formatters
+        // Normalize AM/PM to uppercase for consistent parsing
+        String normalizedInput =
+                dateTimeStr.replaceAll("(?i)\\bam\\b", "AM").replaceAll("(?i)\\bpm\\b", "PM");
+
+        // Define possible formatters with English locale for AM/PM parsing
         DateTimeFormatter[] formatters = {
                 // yyyy-mm-dd formats
                 DateTimeFormatter.ofPattern(YYYY_MM_DD_HHMM),
                 DateTimeFormatter.ofPattern(YYYY_MM_DD_HH_MM),
-                DateTimeFormatter.ofPattern(YYYY_MM_DD_H_MM_A),
+                DateTimeFormatter.ofPattern(YYYY_MM_DD_H_MM_A, Locale.ENGLISH),
                 DateTimeFormatter.ofPattern(YYYY_MM_DD),
                 // d/m/yyyy formats
                 DateTimeFormatter.ofPattern(D_M_YYYY_HHMM),
                 DateTimeFormatter.ofPattern(D_M_YYYY_HH_MM),
-                DateTimeFormatter.ofPattern(D_M_YYYY_H_MM_A),
+                DateTimeFormatter.ofPattern(D_M_YYYY_H_MM_A, Locale.ENGLISH),
                 DateTimeFormatter.ofPattern(D_M_YYYY)};
 
         // Try parsing with each formatter
         for (DateTimeFormatter formatter : formatters) {
             try {
-                if (dateTimeStr.matches(DATE_ONLY_DASH_PATTERN)
-                        || dateTimeStr.matches(DATE_ONLY_SLASH_PATTERN)) {
+                if (normalizedInput.matches(DATE_ONLY_DASH_PATTERN)
+                        || normalizedInput.matches(DATE_ONLY_SLASH_PATTERN)) {
                     // Date only formats - parse as LocalDate and set time to default
-                    LocalDate date = LocalDate.parse(dateTimeStr, formatter);
+                    LocalDate date = LocalDate.parse(normalizedInput, formatter);
                     return date.atTime(DEFAULT_HOUR, DEFAULT_MINUTE);
                 } else {
                     // Date with time formats
-                    return LocalDateTime.parse(dateTimeStr, formatter);
+                    return LocalDateTime.parse(normalizedInput, formatter);
                 }
             } catch (DateTimeParseException e) {
                 // Continue to next formatter

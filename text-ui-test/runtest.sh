@@ -13,14 +13,15 @@ then
 fi
 
 # compile the code into the bin folder, terminates if error occurred
-if ! javac -cp ../src/main/java -Xlint:none -d ../bin ../src/main/java/*.java
+# Exclude JavaFX-dependent classes for text-ui testing
+if ! javac -cp ../src/main/java -Xlint:none -d ../bin $(find ../src/main/java -name "*.java" ! -name "Main.java" ! -name "MainWindow.java" ! -name "DialogBox.java" ! -name "Launcher.java")
 then
     echo "********** BUILD FAILURE **********"
     exit 1
 fi
 
 # run the program, feed commands from input.txt file and redirect the output to the ACTUAL.TXT
-java -classpath ../bin Luffy < input.txt > ACTUAL.TXT
+java -classpath ../bin luffy.Luffy < input.txt > ACTUAL.TXT
 
 # convert to UNIX format
 cp EXPECTED.TXT EXPECTED-UNIX.TXT

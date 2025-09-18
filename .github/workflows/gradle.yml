@@ -10,16 +10,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
-      - name: Set up repository
-        uses: actions/checkout@master
 
-      - name: Set up repository
-        uses: actions/checkout@master
-        with:
-          ref: master
-
-      - name: Merge to master
-        run: git checkout --progress --force ${{ github.sha }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Validate Gradle Wrapper
         uses: gradle/actions/wrapper-validation@v3
@@ -29,7 +22,36 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '17'
-          java-package: jdk+fx
 
-      - name: Build and check with Gradle
-        run: ./gradlew check
+      - name: Setup JavaFX dependencies (Linux)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Build and test with Gradle
+        run: |
+          if [ "${{ matrix.platform }}" == "ubuntu-latest" ]; then
+            xvfb-run -a ./gradlew check
+          else
+            ./gradlew check
+          fi
+        shell: bash
+
+      - name: Run text-ui-test
+        run: |
+          cd text-ui-test
+          if [ "${{ matrix.platform }}" == "windows-latest" ]; then
+            ./runtest.bat
+          else
+            bash runtest.sh
+          fi
+        shell: bash
+
+      - name: Generate test report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test Results (${{ matrix.platform }})
+          path: build/test-results/test/*.xml
+          reporter: java-junit
