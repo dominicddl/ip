@@ -40,8 +40,8 @@ public class DialogBox extends HBox {
         displayPicture.setImage(img);
         displayPicture.getStyleClass().add("avatar");
 
-        // Make the image circular
-        Circle clip = new Circle(20, 20, 20);
+        // Make the image circular and smaller
+        Circle clip = new Circle(16, 16, 16);
         displayPicture.setClip(clip);
     }
 
@@ -62,9 +62,17 @@ public class DialogBox extends HBox {
     }
 
     public static DialogBox getLuffyDialog(String text, Image img) {
+        return getLuffyDialog(text, img, false);
+    }
+
+    public static DialogBox getLuffyDialog(String text, Image img, boolean isError) {
         var db = new DialogBox(text, img);
         db.flip();
-        db.dialog.getStyleClass().add("luffy-label");
+        if (isError) {
+            db.dialog.getStyleClass().add("error-label");
+        } else {
+            db.dialog.getStyleClass().add("luffy-label");
+        }
         return db;
     }
 }
