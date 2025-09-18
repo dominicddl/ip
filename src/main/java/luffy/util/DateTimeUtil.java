@@ -25,7 +25,9 @@ public class DateTimeUtil {
             return dateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy"));
         } else {
             // Show full date and time
-            return dateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy, h:mm a"));
+            String formatted = dateTime.format(DateTimeFormatter.ofPattern("MMM dd yyyy, h:mm a"));
+            // Only convert AM/PM to lowercase, keep the rest as is
+            return formatted.replaceAll("\\bAM\\b", "am").replaceAll("\\bPM\\b", "pm");
         }
     }
 
