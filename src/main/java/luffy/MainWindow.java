@@ -39,17 +39,19 @@ public class MainWindow extends AnchorPane {
     }
 
     /**
-     * Creates two dialog boxes, one echoing user input and the other containing Luffy's reply and then appends them to
-     * the dialog container. Clears the user input after processing.
+     * Creates two dialog boxes, one echoing user input and the other containing Luffy's reply and
+     * then appends them to the dialog container. Clears the user input after processing.
      */
     @FXML
     private void handleUserInput() {
         String input = userInput.getText();
         String response = luffy.getResponse(input);
-        dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, userImage),
-                DialogBox.getLuffyDialog(response, luffyImage)
-        );
+
+        // Detect if response is an error message
+        boolean isError = response.startsWith("OOPS!!!");
+
+        dialogContainer.getChildren().addAll(DialogBox.getUserDialog(input, userImage),
+                DialogBox.getLuffyDialog(response, luffyImage, isError));
         userInput.clear();
     }
 }

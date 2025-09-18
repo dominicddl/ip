@@ -10,44 +10,22 @@
     -fx-background-color: #0d1117;
 }
 
-/* Text input field styling */
-.text-field {
-    -fx-background-color: #21262d;
-    -fx-border-color: #30363d;
-    -fx-border-width: 1px;
-    -fx-border-radius: 8px;
-    -fx-background-radius: 8px;
-    -fx-text-fill: #f0f6fc;
-    -fx-font-size: 14px;
-    -fx-padding: 12px 16px;
-    -fx-prompt-text-fill: #7d8590;
-}
-
+/* Text input field styling - Enhanced */
 .text-field:focused {
     -fx-border-color: #1f6feb;
     -fx-border-width: 2px;
     -fx-effect: dropshadow(gaussian, rgba(31, 111, 235, 0.3), 4, 0, 0, 0);
 }
 
-/* Send button styling */
-.button {
-    -fx-background-color: #238636;
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-font-weight: 500;
-    -fx-border-radius: 8px;
-    -fx-background-radius: 8px;
-    -fx-padding: 8px 16px;
-    -fx-cursor: hand;
-}
-
+/* Button interaction states */
 .button:hover {
-    -fx-background-color: #2ea043;
-    -fx-effect: dropshadow(gaussian, rgba(35, 134, 54, 0.3), 4, 0, 0, 0);
+    -fx-background-color: linear-gradient(to bottom, #2ea043, #238636);
+    -fx-effect: dropshadow(gaussian, rgba(35, 134, 54, 0.4), 6, 0, 0, 1);
 }
 
 .button:pressed {
-    -fx-background-color: #1a7f37;
+    -fx-background-color: linear-gradient(to bottom, #1a7f37, #2ea043);
+    -fx-effect: dropshadow(gaussian, rgba(35, 134, 54, 0.2), 2, 0, 0, 0);
 }
 
 /* Scroll pane styling */
@@ -83,8 +61,35 @@
     -fx-background-color: #6e7681;
 }
 
-/* Chat container */
+/* Chat container - Optimized spacing */
 .vbox {
     -fx-background-color: transparent;
-    -fx-padding: 16px;
+    -fx-padding: 12px 8px 8px 8px;
+}
+
+/* Improved text field with better visual hierarchy */
+.text-field {
+    -fx-background-color: #21262d;
+    -fx-border-color: #30363d;
+    -fx-border-width: 1px;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-text-fill: #f0f6fc;
+    -fx-font-size: 14px;
+    -fx-padding: 12px 16px;
+    -fx-prompt-text-fill: #7d8590;
+    -fx-font-family: "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+}
+
+/* Enhanced button styling */
+.button {
+    -fx-background-color: linear-gradient(to bottom, #238636, #2ea043);
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: 600;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 10px 18px;
+    -fx-cursor: hand;
+    -fx-font-family: "SF Pro Display", "Segoe UI", system-ui, sans-serif;
 }
